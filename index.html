@@ -128,31 +128,59 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .durlabel { display: block; text-align: center; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: -2px; }
 .dialhint { text-align: center; margin-top: -10px; }
 .style.wide { grid-column: 1 / -1; height: 200px; }
-.saved { display: flex; flex-direction: column; gap: 8px; }
-.qsrow { display: flex; align-items: center; gap: 6px; }
-.qs {
-  flex: 1;
-  min-width: 0;
+.savedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.savedhead .linkbtn { padding: 0 4px; }
+.saved {
   display: flex;
-  align-items: center;
-  gap: 12px;
-  min-height: 70px;
+  gap: 10px;
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  margin: -6px -20px 0;
+  padding: 12px 20px 8px;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.saved::-webkit-scrollbar { display: none; }
+.qwrap { position: relative; flex: 0 0 auto; scroll-snap-align: start; }
+.qs {
+  width: 132px;
+  height: 116px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: space-between;
   border: 0;
-  border-radius: 22px;
+  border-radius: 20px;
   background: var(--chip);
-  padding: 10px 10px 10px 14px;
+  padding: 12px;
   text-align: left;
   cursor: pointer;
   touch-action: manipulation;
 }
 body[data-look="bold"] .qs { box-shadow: inset 0 0 0 2px #FFFFFF; }
-.qs .emo { font-size: 32px; line-height: 1; flex: none; }
-.qs div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
-.qs b { font-size: 17px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qs small { font-size: 13px; color: var(--soft); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.qs .go { flex: none; background: var(--acc); color: var(--on-acc); border-radius: 16px; padding: 9px 14px; font-weight: 800; font-size: 15px; }
-.del { flex: none; min-width: 44px; height: 44px; border-radius: 22px; border: 0; background: transparent; color: var(--soft); font-size: 15px; font-weight: 800; cursor: pointer; padding: 0 10px; }
-.del.arm { background: #C55E5E; color: #FFFFFF; }
+.qs .emo { font-size: 30px; line-height: 1; }
+.qs b { font-size: 14px; font-weight: 800; line-height: 1.2; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; }
+.qs small { font-size: 12px; color: var(--soft); font-weight: 700; }
+.del {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 15px;
+  border: 0;
+  background: #C55E5E;
+  color: #FFFFFF;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+  display: none;
+}
+.saved.editing .del { display: block; }
+.saved.editing .qs { animation: jiggle 0.4s ease-in-out infinite alternate; }
+@keyframes jiggle { from { transform: rotate(-1deg); } to { transform: rotate(1deg); } }
+@media (prefers-reduced-motion: reduce) { .saved.editing .qs { animation: none; } }
 .savebtn { margin-top: 4px; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg button {
@@ -541,7 +569,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     </div>
 
     <div id="savedWrap" hidden>
-      <h2 class="sec" style="margin-top: 4px">Your timers <em>one tap to start</em></h2>
+      <div class="savedhead"><h2 class="sec" style="margin-top: 4px">Your timers <em>tap to start</em></h2><button class="linkbtn" id="editSaved" type="button">Edit</button></div>
       <div class="saved" id="saved"></div>
     </div>
 
@@ -651,7 +679,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   const DEF = {
     secs: 300, style: 'clock', now: null, next: null, saved: [],
     speak: 'off', kidBtns: 'show',
-    clockFill: 'solid', clockFace: 'numbers', celebrate: 'sparkles', taps: 'sparkle',
+    clockFill: 'solid', clockFace: 'numbers', celebrate: 'sparkles', bg: 'off', bgVol: 40,
     end: 'chime', repeat: 'once', warn: 2, run: 'off', vol: 70, mute: false,
     numbers: 'words', look: 'night', colour: 'amber', motion: reduceMotion ? 'still' : 'gentle', dir: 'empty', lock: 'anyone',
   };
@@ -689,10 +717,10 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     ['🌳', 'Park'], ['🐶', 'Walk'], ['🛒', 'Shops'], ['🏊', 'Swimming'],
   ];
   const PROFILES = [
-    { id: 'quiet', e: '🤫', t: 'Quiet ears', d: 'No sounds at all. A soft glow at the end.', set: { end: 'light', run: 'off', repeat: 'once', speak: 'off' } },
+    { id: 'quiet', e: '🤫', t: 'Quiet ears', d: 'No sounds at all. A soft glow at the end.', set: { end: 'light', run: 'off', repeat: 'once', speak: 'off', bg: 'off' } },
     { id: 'clear', e: '🔔', t: 'Clear signal', d: 'A heads-up, then bells until someone taps.', set: { end: 'bells', repeat: 'until', warn: 2, numbers: 'exact' } },
     { id: 'calm', e: '🌙', t: 'No pressure', d: 'No numbers. It fills up instead of running out.', set: { numbers: 'off', dir: 'fill', warn: 0, end: 'chime', repeat: 'once' } },
-    { id: 'focus', e: '🎯', t: 'Low distraction', d: 'Nothing moves or ticks. Just the time.', set: { motion: 'still', run: 'off', numbers: 'words', taps: 'off', celebrate: 'off', kidBtns: 'hide' } },
+    { id: 'focus', e: '🎯', t: 'Low distraction', d: 'Nothing moves or ticks. Just the time.', set: { motion: 'still', run: 'off', numbers: 'words', celebrate: 'off', kidBtns: 'hide' } },
   ];
   const ROWS = [
     { h: 'Sounds' },
@@ -701,6 +729,9 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     { k: 'repeat', t: 'Play it', o: [['once', 'Once'], ['until', 'Until someone taps']] },
     { k: 'warn', t: 'Heads-up before the end', num: true, o: [['0', 'Off'], ['1', '1 min'], ['2', '2 min'], ['5', '5 min']],
       note: () => 'A soft sound and a message, so the end isn’t a surprise.' },
+    { k: 'bg', t: 'Background sound', o: [['off', 'None'], ['rain', 'Rain'], ['waves', 'Waves'], ['hum', 'Deep hum']],
+      note: () => S.bg === 'off' ? 'A soft, steady sound while the timer runs. It fades away just before the end.' : 'Plays quietly while the timer runs, then fades away just before the end. Tap to hear it.' },
+    { k: 'bgVol', t: 'Background volume', range: true },
     { k: 'speak', t: 'Say it out loud', o: [['off', 'Off'], ['on', 'On']],
       note: () => 'A calm voice says the heads-up and what comes next. Good for children who don\u2019t read yet.' },
     { k: 'run', t: 'While it runs', o: [['off', 'Silent'], ['soft', 'Soft ticks']], note: () => 'Bubbles makes little pops instead of ticks.' },
@@ -710,13 +741,10 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     { k: 'look', t: 'Look', o: [['night', 'Night'], ['day', 'Day'], ['bold', 'Bold contrast']] },
     { k: 'colour', t: 'Colour', swatch: true },
     { k: 'motion', t: 'Movement', o: [['gentle', 'Gentle'], ['still', 'Still']] },
-    { k: 'dir', t: 'The timer', o: [['empty', 'Empties'], ['fill', 'Fills up']], note: () => 'Filling up can feel less like time running out.' },
+    { k: 'dir', t: 'Count down or up', o: [['empty', 'Count down (empties)'], ['fill', 'Count up (fills)']], note: () => 'Counting up fills the timer instead of emptying it. It can feel less like time running out.' },
     { k: 'clockFill', t: 'Clock colours', o: [['solid', 'One colour'], ['rainbow', 'Rainbow']] },
     { k: 'clockFace', t: 'Clock face', o: [['numbers', 'Numbers'], ['pictures', 'Animal pictures']], note: () => 'These two are for the Clock timer.' },
     { k: 'celebrate', t: 'When it finishes', o: [['sparkles', 'Falling stars'], ['off', 'Nothing extra']] },
-    { h: 'Touch' },
-    { k: 'taps', t: 'Tapping the timer', o: [['sparkle', 'Makes sparkles'], ['off', 'Does nothing']],
-      note: () => 'Something for fidgety fingers to do while waiting. It never stops or changes the timer.' },
     { h: 'Grown-ups' },
     { k: 'kidBtns', t: 'Buttons on the timer screen', o: [['show', 'Show them'], ['hide', 'Hide them']],
       note: () => 'Hide the change-timer and sound buttons if they become something to fiddle with. Pause always stays.' },
@@ -863,6 +891,85 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       o.connect(gn); gn.connect(out);
       o.start(t); o.stop(t + 0.15);
     });
+  }
+  // background sounds, all generated on the device
+  let bgN = null, bgPreviewT = 0;
+  const bufCache = {};
+  function noiseBuf(kind) {
+    if (bufCache[kind]) return bufCache[kind];
+    const len = ac.sampleRate * 6, b = ac.createBuffer(1, len, ac.sampleRate), d = b.getChannelData(0);
+    let last = 0;
+    for (let i = 0; i < len; i++) {
+      const w = Math.random() * 2 - 1;
+      if (kind === 'white') d[i] = w * 0.5;
+      else { last = (last + 0.02 * w) / 1.02; d[i] = last * 3.2; }
+    }
+    // blend the loop point so there's no click when it repeats
+    const fade = Math.floor(ac.sampleRate * 0.25);
+    for (let i = 0; i < fade; i++) { const k = i / fade; d[len - fade + i] = d[len - fade + i] * (1 - k) + d[i] * k; }
+    bufCache[kind] = b;
+    return b;
+  }
+  function bgTarget() { return S.mute ? 0 : clamp(S.bgVol / 100, 0, 1) * 0.5; }
+  function bgStart() {
+    if (!ac || S.bg === 'off' || bgN) return;
+    try {
+      const t = ac.currentTime;
+      const src = ac.createBufferSource(); src.loop = true;
+      const g = ac.createGain(); g.gain.setValueAtTime(0.0001, t);
+      const shape = ac.createGain(); shape.gain.value = 1;
+      const f1 = ac.createBiquadFilter(), f2 = ac.createBiquadFilter();
+      let lfo = null;
+      if (S.bg === 'rain') {
+        src.buffer = noiseBuf('white');
+        f1.type = 'highpass'; f1.frequency.value = 500;
+        f2.type = 'lowpass'; f2.frequency.value = 3200;
+        shape.gain.value = 0.55;
+      } else if (S.bg === 'waves') {
+        src.buffer = noiseBuf('brown');
+        f1.type = 'lowpass'; f1.frequency.value = 1100;
+        f2.type = 'highpass'; f2.frequency.value = 60;
+        shape.gain.value = 0.55;
+        lfo = ac.createOscillator(); lfo.frequency.value = 0.09;
+        const depth = ac.createGain(); depth.gain.value = 0.45;
+        lfo.connect(depth); depth.connect(shape.gain); lfo.start(t);
+      } else {
+        src.buffer = noiseBuf('brown');
+        f1.type = 'lowpass'; f1.frequency.value = 380;
+        f2.type = 'highpass'; f2.frequency.value = 30;
+        shape.gain.value = 1;
+      }
+      src.connect(f1); f1.connect(f2); f2.connect(shape); shape.connect(g); g.connect(out);
+      src.start(t);
+      g.gain.exponentialRampToValueAtTime(Math.max(0.0002, bgTarget()), t + 2.5);
+      bgN = { src, g, lfo, fading: false };
+    } catch (e) {}
+  }
+  function bgStop(sec) {
+    if (!bgN || !ac) return;
+    const { src, g, lfo } = bgN, t = ac.currentTime, d = Math.max(0.1, sec == null ? 1.2 : sec);
+    try {
+      g.gain.cancelScheduledValues(t);
+      g.gain.setValueAtTime(Math.max(0.0001, g.gain.value), t);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+      src.stop(t + d + 0.1);
+      if (lfo) lfo.stop(t + d + 0.1);
+    } catch (e) {}
+    bgN = null;
+  }
+  function bgLevel() {
+    if (!bgN || !ac || bgN.fading) return;
+    const t = ac.currentTime;
+    bgN.g.gain.cancelScheduledValues(t);
+    bgN.g.gain.setTargetAtTime(Math.max(0.0001, bgTarget()), t, 0.2);
+  }
+  function previewBg() {
+    initAudio();
+    if (T && !T.done) return;
+    bgStop(0.3);
+    clearTimeout(bgPreviewT);
+    if (S.bg === 'off') return;
+    setTimeout(() => { bgStart(); bgPreviewT = setTimeout(() => bgStop(1.5), 4000); }, 320);
   }
   function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) {} }
 
@@ -1413,27 +1520,11 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     }
   }
 
-  // Sparkles when a child taps the screen, and falling stars at the end.
-  const RIP = [];
+  // Gentle falling stars at the end.
   function star(c, x, y, r) {
     c.beginPath();
     for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU - Math.PI / 2, rr2 = i % 2 ? r * 0.38 : r; i ? c.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2) : c.moveTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); }
     c.closePath(); c.fill();
-  }
-  function drawRipples(c, t) {
-    for (let i = RIP.length - 1; i >= 0; i--) {
-      const r = RIP[i], k = (t - r.t0) / 1100;
-      if (k >= 1) { RIP.splice(i, 1); continue; }
-      const e = 1 - Math.pow(1 - k, 3);
-      c.strokeStyle = rgba(TH.hi, (1 - k) * 0.55);
-      c.lineWidth = 1 + 2.5 * (1 - k);
-      c.beginPath(); c.arc(r.x, r.y, 10 + e * 80, 0, TAU); c.stroke();
-      c.fillStyle = rgba(TH.hi, 1 - k);
-      for (let j = 0; j < 9; j++) {
-        const a = (j / 9) * TAU + r.s, d = 8 + e * (50 + 25 * rnd(j + r.s * 10));
-        star(c, r.x + Math.cos(a) * d, r.y + Math.sin(a) * d + k * k * 18, 2 + 5 * (1 - k));
-      }
-    }
   }
   function drawCelebrate(c, dt) {
     if (dt < 0 || dt > 5200) return;
@@ -1484,6 +1575,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     stopAlert();
     lastTotal = ms;
     T = { total: ms, endAt: Date.now() + ms, pausedLeft: null, warned: false, done: false, sec: -1, k: -1 };
+    clearTimeout(bgPreviewT); bgStop(0.3); setTimeout(() => { if (T && !T.done && T.pausedLeft == null) bgStart(); }, 350);
     persist();
     showRun();
     wakeOn();
@@ -1567,6 +1659,13 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       if (k > T.k && running) { if (S.run === 'soft' && l > 0) popSound(); buzz(6); }
       T.k = k;
     }
+    if (running && bgN && !bgN.fading && l <= 8000 && l > 0 && ac) {
+      bgN.fading = true;
+      const t = ac.currentTime;
+      bgN.g.gain.cancelScheduledValues(t);
+      bgN.g.gain.setValueAtTime(Math.max(0.0001, bgN.g.gain.value), t);
+      bgN.g.gain.exponentialRampToValueAtTime(0.0001, t + l / 1000);
+    }
     if (running && l <= 0) finish();
   }
   function spokenDur(sec) { if (sec < 60) return sec + ' seconds'; const m = Math.round(sec / 60); return m < 60 ? minsWord(m) : durLabel(sec).replace('hr', 'hour').replace('min', 'minutes'); }
@@ -1585,6 +1684,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   function glow(mode) { const g = $('glow'); g.className = ''; void g.offsetWidth; if (mode) g.className = mode; }
   function finish() {
     T.done = true; T.pausedLeft = null; T.doneAt = performance.now();
+    bgStop(0.8);
     persist();
     if (S.end !== 'light') playEnd();
     buzz([200, 120, 200]);
@@ -1657,6 +1757,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     if (!T || T.done) return;
     initAudio();
     if (T.pausedLeft == null) { T.pausedLeft = leftMs(); persist(); }
+    bgStop(0.8);
     $('pausedLeft').textContent = words(T.pausedLeft) === 'Nearly done' ? 'Nearly done' : exact(T.pausedLeft) + ' left';
     $('paused').hidden = false;
     $('resume').focus({ preventScroll: true });
@@ -1666,6 +1767,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     if (T.pausedLeft != null) { T.endAt = Date.now() + T.pausedLeft; T.pausedLeft = null; persist(); }
     $('paused').hidden = true;
     wakeOn();
+    if (leftMs() > 9000) bgStart();
   });
   $('addMin').addEventListener('click', () => {
     if (!T) return;
@@ -1677,15 +1779,16 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     $('pausedLeft').textContent = exact(leftMs()) + ' left';
     buzz(10);
   });
-  $('stopNow').addEventListener('click', () => { T = null; persist(); stopAlert(); showSetup(); });
+  $('stopNow').addEventListener('click', () => { bgStop(0.6); T = null; persist(); stopAlert(); showSetup(); });
   $('again').addEventListener('click', () => startRun(lastTotal));
-  $('finish').addEventListener('click', () => { stopAlert(); T = null; persist(); showSetup(); });
+  $('finish').addEventListener('click', () => { bgStop(0.6); stopAlert(); T = null; persist(); showSetup(); });
   $('done').addEventListener('pointerdown', () => { if (repeatTimer || $('glow').className) stopAlert(); });
 
   $('bSound').addEventListener('click', () => {
     initAudio();
     if (S.end === 'light' && !S.mute) { tip('Light only: no sounds'); return; }
     S.mute = !S.mute; save(); renderKid();
+    if (S.mute) bgStop(0.4); else if (T && !T.done && T.pausedLeft == null) bgStart();
     tip(S.mute ? 'Sound off' : 'Sound on');
     if (!S.mute) bell(783.99, 0, 0.18, 1.2);
   });
@@ -1762,9 +1865,10 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       const lab = document.createElement(r.range ? 'label' : 'span'); lab.textContent = r.t;
       row.append(lab);
       if (r.range) {
-        const inp = document.createElement('input'); inp.type = 'range'; inp.min = '0'; inp.max = '100'; inp.id = 'vol'; lab.htmlFor = 'vol';
-        inp.addEventListener('input', () => { S.vol = Number(inp.value); save(); });
-        inp.addEventListener('change', () => { initAudio(); const m = S.mute; S.mute = false; if (S.end === 'light') bell(783.99, 0, 0.3, 1.4); else playEnd(); S.mute = m; });
+        const inp = document.createElement('input'); inp.type = 'range'; inp.min = '0'; inp.max = '100'; inp.id = r.k; lab.htmlFor = r.k;
+        inp.addEventListener('input', () => { S[r.k] = Number(inp.value); save(); if (r.k === 'bgVol') bgLevel(); });
+        if (r.k === 'vol') inp.addEventListener('change', () => { initAudio(); const m = S.mute; S.mute = false; if (S.end === 'light') bell(783.99, 0, 0.3, 1.4); else playEnd(); S.mute = m; });
+        if (r.k === 'bgVol') inp.addEventListener('change', () => previewBg());
         row.append(inp);
       } else if (r.swatch) {
         const box = document.createElement('div'); box.className = 'swatches'; box.dataset.key = 'colour';
@@ -1784,6 +1888,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
             S[r.k] = r.num ? Number(v) : v;
             save();
             if (r.k === 'look' || r.k === 'colour') theme();
+            if (r.k === 'bg') previewBg();
             if (r.k === 'end') { initAudio(); const m = S.mute; S.mute = false; playEnd(); S.mute = m; }
             if (r.k === 'run' && v === 'soft') { initAudio(); const m = S.mute; S.mute = false; tickSound(0); setTimeout(() => tickSound(1), 500); S.mute = m; }
             renderSetup();
@@ -1845,6 +1950,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       b.setAttribute('aria-pressed', String(b.dataset.v === S.colour));
     });
     const vol = $('vol'); if (vol) vol.value = S.vol;
+    const bgv = $('bgVol'); if (bgv) bgv.value = S.bgVol;
     ROWS.forEach((r) => { if (r.note) { const p = document.querySelector('[data-note="' + r.k + '"]'); if (p) p.textContent = r.note(); } });
   }
 
@@ -1912,44 +2018,41 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     if (x.now) return x.now.l;
     return (STYLES.find((st) => st.id === x.style) || STYLES[0]).name + ' timer';
   }
+  let editingSaved = false;
   function renderSaved() {
     const list = Array.isArray(S.saved) ? S.saved : [];
+    if (!list.length) editingSaved = false;
     $('savedWrap').hidden = !list.length;
     const box = $('saved');
+    box.classList.toggle('editing', editingSaved);
+    $('editSaved').textContent = editingSaved ? 'Done' : 'Edit';
     box.textContent = '';
     list.forEach((x, i) => {
-      const row = document.createElement('div'); row.className = 'qsrow';
+      const wrap = document.createElement('div'); wrap.className = 'qwrap';
       const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'qs';
       const e = document.createElement('span'); e.className = 'emo'; e.setAttribute('aria-hidden', 'true');
       e.textContent = (x.next && x.next.e) || (x.now && x.now.e) || '⏱️';
-      const tx = document.createElement('div');
+      const tx = document.createElement('div'); tx.style.width = '100%';
       const b = document.createElement('b'); b.textContent = savedName(x);
       const sm = document.createElement('small');
       sm.textContent = durLabel(x.secs) + ' · ' + ((STYLES.find((st) => st.id === x.style) || STYLES[0]).name);
       tx.append(b, sm);
-      const go = document.createElement('span'); go.className = 'go'; go.textContent = 'Start';
-      bt.append(e, tx, go);
+      bt.append(e, tx);
       bt.setAttribute('aria-label', 'Start ' + savedName(x) + ', ' + durLabel(x.secs));
       bt.addEventListener('click', () => {
+        if (editingSaved) return;
         Object.assign(S, { secs: x.secs, style: x.style, now: x.now || null, next: x.next || null });
         save(); renderSetup();
         startRun(x.secs * 1000);
       });
       const del = document.createElement('button'); del.type = 'button'; del.className = 'del';
       del.textContent = '✕'; del.setAttribute('aria-label', 'Remove ' + savedName(x));
-      del.addEventListener('click', () => {
-        // two taps to remove, so a slip doesn't lose a saved timer
-        if (!del.classList.contains('arm')) {
-          del.classList.add('arm'); del.textContent = 'Remove?';
-          clearTimeout(del._t); del._t = setTimeout(() => { del.classList.remove('arm'); del.textContent = '✕'; }, 3000);
-          return;
-        }
-        S.saved = list.filter((_, j) => j !== i); save(); renderSaved();
-      });
-      row.append(bt, del);
-      box.append(row);
+      del.addEventListener('click', () => { S.saved = list.filter((_, j) => j !== i); save(); renderSaved(); });
+      wrap.append(bt, del);
+      box.append(wrap);
     });
   }
+  $('editSaved').addEventListener('click', () => { editingSaved = !editingSaved; renderSaved(); });
   $('saveBtn').addEventListener('click', () => {
     const item = { secs: S.secs, style: S.style, now: S.now, next: S.next };
     const key = JSON.stringify(item);
@@ -1959,14 +2062,6 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     btn.textContent = '✓ Saved to your timers, at the top';
     clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = '⭐ Save as one of your timers'; }, 2600);
     buzz(10);
-  });
-
-  // ---------- taps on the running timer make sparkles ----------
-  cv.addEventListener('pointerdown', (e) => {
-    if (S.taps !== 'sparkle' || !T || T.done) return;
-    RIP.push({ x: e.clientX, y: e.clientY, t0: performance.now(), s: Math.random() * 6 });
-    if (RIP.length > 14) RIP.shift();
-    buzz(5);
   });
 
   // now / next picker
@@ -2050,7 +2145,6 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const o = { running: T.pausedLeft == null && !T.done, total: T.total, left: l };
     if (S.style === 'sunset') drawSunset(c, { x: 0, y: 0, w: W, h: H }, f, tm, o);
     else { drawBg(c, W, H); DRAW[S.style](c, BOX, f, tm, o); }
-    if (RIP.length) drawRipples(c, t);
     if (T.done && T.doneAt && S.celebrate === 'sparkles') drawCelebrate(c, t - T.doneAt);
     renderLeft(false);
   }
