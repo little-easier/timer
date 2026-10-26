@@ -1,5 +1,5 @@
 // Little Easier Timer: keep working with no connection after the first visit.
-const CACHE = 'le-timer-v3';
+const CACHE = 'le-timer-v4';
 const CORE = ['./', 'index.html', 'manifest.webmanifest', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', (e) => {

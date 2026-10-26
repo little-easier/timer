@@ -128,6 +128,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .durlabel { display: block; text-align: center; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: -2px; }
 .dialhint { text-align: center; margin-top: -10px; }
 .style.wide { grid-column: 1 / -1; height: 200px; }
+.style.wide.short { height: 132px; }
 .savedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .savedhead .linkbtn { padding: 0 4px; }
 .saved {
@@ -685,14 +686,17 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   };
   const S = Object.assign({}, DEF);
   try { Object.assign(S, JSON.parse(localStorage.getItem('timer-settings') || '{}')); } catch (e) {}
+  // older versions had Disc and Water
+  const MOVED = { disc: 'clock', water: 'bath' };
+  if (MOVED[S.style]) S.style = MOVED[S.style];
+  if (Array.isArray(S.saved)) S.saved.forEach((x) => { if (MOVED[x.style]) x.style = MOVED[x.style]; });
   function save() { try { localStorage.setItem('timer-settings', JSON.stringify(S)); } catch (e) {} }
 
   const STYLES = [
     { id: 'clock', name: 'Clock', hint: 'Like a classroom timer' },
-    { id: 'disc', name: 'Disc', hint: 'The colour shrinks away' },
     { id: 'sand', name: 'Sand', hint: 'An hourglass' },
     { id: 'bubbles', name: 'Bubbles', hint: 'One pops at a time' },
-    { id: 'water', name: 'Water', hint: 'A jar slowly empties' },
+    { id: 'bath', name: 'Bath', hint: 'The bath slowly empties' },
     { id: 'sunset', name: 'Sunset', hint: 'Day turns into night' },
     { id: 'numbers', name: 'Numbers', hint: 'Big, clear digits' },
   ];
@@ -875,12 +879,12 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     o.connect(gn); gn.connect(out);
     o.start(t); o.stop(t + 0.06);
   }
-  function popSound() {
+  function popSound(small) {
     if (!ac) return;
-    const v = level() * 0.3;
+    const v = level() * (small ? 0.16 : 0.3);
     if (v <= 0.0005) return;
     const t = ac.currentTime;
-    [[760, 200, 1], [1500, 620, 0.35]].forEach(([a, b, k]) => {
+    (small ? [[1300, 420, 1], [2400, 1100, 0.3]] : [[760, 200, 1], [1500, 620, 0.35]]).forEach(([a, b, k]) => {
       const o = ac.createOscillator(), gn = ac.createGain();
       o.type = 'sine';
       o.frequency.setValueAtTime(a, t);
@@ -1008,55 +1012,6 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     }
   }
 
-  // Disc: the classic visual timer. The coloured wedge is the time that's left.
-  function drawDisc(c, b, f, t, o) {
-    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, R = Math.min(b.w, b.h) * 0.47;
-    const shown = S.dir === 'fill' ? 1 - f : f;
-    c.beginPath(); c.arc(cx, cy, R, 0, TAU);
-    c.fillStyle = TH.face; c.fill();
-    c.lineWidth = Math.max(1.5, R * 0.018); c.strokeStyle = TH.line; c.stroke();
-    if (!o.mini) {
-      c.strokeStyle = TH.line;
-      c.lineCap = 'round';
-      for (let i = 0; i < 60; i++) {
-        const big = i % 5 === 0, a = -Math.PI / 2 + (i / 60) * TAU;
-        const r1 = R * 0.95, r0 = R * (big ? 0.87 : 0.91);
-        c.lineWidth = big ? Math.max(2, R * 0.016) : Math.max(1, R * 0.007);
-        c.beginPath();
-        c.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0);
-        c.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1);
-        c.stroke();
-      }
-    }
-    const rr2 = R * (o.mini ? 0.9 : 0.84);
-    if (shown > 0.0008) {
-      const a0 = -Math.PI / 2, a1 = a0 + shown * TAU;
-      const g = c.createRadialGradient(cx, cy, rr2 * 0.05, cx, cy, rr2);
-      g.addColorStop(0, rgba(TH.hi)); g.addColorStop(1, TH.acc);
-      c.save();
-      if (TH.glow > 0.4) { c.shadowColor = rgba(TH.a, 0.45 * TH.glow); c.shadowBlur = R * (0.1 + 0.03 * Math.sin(t / 1300)); }
-      c.beginPath(); c.moveTo(cx, cy);
-      c.arc(cx, cy, rr2, a0, a1);
-      c.closePath();
-      c.fillStyle = g; c.fill();
-      c.restore();
-      // a soft sheen that slowly travels round the colour
-      if (t && shown > 0.02) {
-        const sa = a0 + ((t / 9000) % 1) * shown * TAU;
-        c.save();
-        c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, rr2, a0, a1); c.closePath(); c.clip();
-        const sg = c.createLinearGradient(cx, cy, cx + Math.cos(sa) * rr2, cy + Math.sin(sa) * rr2);
-        sg.addColorStop(0, 'rgba(255,255,255,0)'); sg.addColorStop(1, 'rgba(255,255,255,0.16)');
-        c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, rr2 * 1.02, sa - 0.25, sa + 0.25); c.closePath();
-        c.fillStyle = sg; c.fill();
-        c.restore();
-      }
-    }
-    c.beginPath(); c.arc(cx, cy, R * 0.075, 0, TAU);
-    c.fillStyle = TH.day ? '#FFFFFF' : TH.bg2; c.fill();
-    c.lineWidth = Math.max(1.5, R * 0.02); c.strokeStyle = TH.line; c.stroke();
-  }
-
   // Sand: an hourglass. Precomputed bulb shape so the sand level matches real volume.
   const SN = 80, PROF = [], AREA = [0];
   for (let i = 0; i <= SN; i++) { const tt = i / SN; PROF.push(0.075 + 0.925 * Math.pow(Math.sin(tt * Math.PI / 2), 0.8)); }
@@ -1163,6 +1118,30 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     for (let i = 0; i <= 20; i++) { const tt = 0.45 + (i / 20) * 0.4; const pt = prof(tt) * hw * 0.78; i ? c.lineTo(cx - pt, cy - tt * hh) : c.moveTo(cx - pt, cy - tt * hh); }
     c.stroke();
     c.restore();
+    // when the sand has all run through, a little sandcastle appears
+    const castle = clamp((0.02 - f) / 0.02, 0, 1);
+    if (castle > 0 && !o.mini) {
+      const mound = Math.min(0.1, (1 - f) * 0.3);
+      const base = cy + tBot * hh - mound * hh * 0.7, s2 = hw * 0.34;
+      c.save();
+      c.globalAlpha = castle;
+      c.fillStyle = rgba(TH.lo);
+      const tower = (tx, w, h) => {
+        c.fillRect(tx - w / 2, base - h, w, h);
+        for (let m = 0; m < 3; m++) c.fillRect(tx - w / 2 + m * (w / 2.5), base - h - w * 0.22, w / 5, w * 0.22);
+      };
+      tower(cx - s2 * 0.62, s2 * 0.42, s2 * 0.55);
+      tower(cx + s2 * 0.62, s2 * 0.42, s2 * 0.55);
+      tower(cx, s2 * 0.6, s2 * 0.85);
+      c.fillStyle = 'rgba(0,0,0,0.25)';
+      c.beginPath(); c.arc(cx, base - s2 * 0.18, s2 * 0.13, Math.PI, 0); c.lineTo(cx + s2 * 0.13, base); c.lineTo(cx - s2 * 0.13, base); c.closePath(); c.fill();
+      c.strokeStyle = TH.ink; c.lineWidth = Math.max(1.5, s2 * 0.04);
+      const fy = base - s2 * 0.85 - s2 * 0.13;
+      c.beginPath(); c.moveTo(cx, fy); c.lineTo(cx, fy - s2 * 0.5); c.stroke();
+      c.fillStyle = '#E2645A';
+      c.beginPath(); c.moveTo(cx, fy - s2 * 0.5); c.lineTo(cx + s2 * 0.32, fy - s2 * 0.4); c.lineTo(cx, fy - s2 * 0.3); c.closePath(); c.fill();
+      c.restore();
+    }
     // wooden caps
     [cy - hh - capH * 0.9, cy + hh - capH * 0.1].forEach((y) => {
       rr(c, cx - capW / 2, y, capW, capH, capH / 2);
@@ -1184,7 +1163,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       if (cs > cell * 1.04) { cell = cs; cols = cc; }
     }
     cell = Math.min(cell, Math.min(b.w, b.h) * 0.62);
-    const rows = Math.ceil(n / cols), r = cell * 0.42;
+    const rows = Math.ceil(n / cols), r = cell * 0.34;
     const oy = b.y + (b.h - rows * cell) / 2 + cell / 2, pts = [];
     for (let i = 0; i < n; i++) {
       const row = Math.floor(i / cols), inRow = row === rows - 1 ? n - row * cols : cols, col = i - row * cols;
@@ -1251,6 +1230,24 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     }
     c.restore();
   }
+  const LITTLE = 6;
+  function littles(c, x, y, r, q, seg, t, fill) {
+    const done = Math.floor(q * LITTLE + 1e-9);
+    for (let j = 0; j < LITTLE; j++) {
+      const a = -Math.PI / 2 + ((j + 0.5) / LITTLE) * TAU;
+      const d = r * 1.16, lr = r * 0.22;
+      const lx = x + Math.cos(a) * d + (t ? Math.sin(t / 900 + j) * lr * 0.15 : 0);
+      const ly = y + Math.sin(a) * d + (t ? Math.cos(t / 1100 + j) * lr * 0.15 : 0);
+      const since = (q - (j + 1) / LITTLE) * seg;
+      if (!fill) {
+        if (j < done) { if (since >= 0 && since < 380) burst(c, lx, ly, lr, since / 380); }
+        else bubble(c, lx, ly, lr, 0.95, t, j * 1.7, 0.02);
+      } else {
+        if (j < done) { const g = since < 400 ? 0.4 + 0.6 * (since / 400) : 1; bubble(c, lx, ly, lr * g, 0.95, t, j * 1.7, 0.02); }
+        else ghost(c, lx, ly, lr);
+      }
+    }
+  }
   function drawBubbles(c, b, f, t, o) {
     const total = o.total, n = o.mini ? 5 : bubbleCount(total);
     const pts = bubbleLayout(n, b), fill = S.dir === 'fill';
@@ -1268,6 +1265,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
         } else if (rank === k) {
           const quiver = q > 0.85 && t ? 0.02 * Math.sin(t / 40) : 0;
           bubble(c, x, y, p.r * (1 - 0.07 * q), 1 - 0.25 * q, t, p.s, 0.012 + 0.045 * q * q + quiver);
+          littles(c, x, y, p.r, q, seg, t, false);
         } else bubble(c, x, y, p.r, 1, t, p.s, 0.012);
       } else {
         if (rank < k) {
@@ -1276,57 +1274,122 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
         } else if (rank === k) {
           ghost(c, x, y, p.r);
           bubble(c, x, y, p.r * (0.15 + 0.55 * q), 0.55 + 0.4 * q, t, p.s, 0.03);
+          littles(c, x, y, p.r, q, seg, t, true);
         } else ghost(c, x, y, p.r);
       }
     }
   }
 
-  // Water: a jar that slowly empties (or fills).
-  function drawWater(c, b, f, t, o) {
-    const cx = b.x + b.w / 2, cy = b.y + b.h / 2;
-    const jw = Math.min(b.w * 0.56, b.h * 0.5), jh = Math.min(b.h * 0.86, jw * 1.55);
-    const x0 = cx - jw / 2, y0 = cy - jh / 2 + jw * 0.05, rad = jw * 0.2;
+  // Bath: a tub that slowly drains (or fills from the tap), with foam and a little duck.
+  function drawBath(c, b, f, t, o) {
     const shown = S.dir === 'fill' ? 1 - f : f;
-    rr(c, x0, y0, jw, jh, rad);
-    c.fillStyle = TH.glass; c.fill();
-    const pad = jw * 0.05, inner = jh - pad * 2;
-    const lvl = y0 + jh - pad - shown * inner;
-    const amp = t ? jh * 0.012 : 0;
+    const tw = Math.min(b.w * 0.94, b.h * 1.25), th = tw * 0.5;
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2 + th * 0.12;
+    const x0 = cx - tw / 2, x1 = cx + tw / 2, y0 = cy - th / 2, y1 = cy + th / 2;
+    const wall = tw * 0.035, rad = th * 0.55;
+    const bold = S.look === 'bold';
+    const tubCol = bold ? '#FFFFFF' : TH.day ? '#FFFFFF' : '#E9EDF5';
+    const tubShade = bold ? '#000000' : TH.day ? '#E7E3DA' : '#2A3352';
+    const tubPath = (ix0, ix1, iy0, iy1, r) => {
+      c.beginPath();
+      c.moveTo(ix0, iy0);
+      c.lineTo(ix0, iy1 - r);
+      c.quadraticCurveTo(ix0, iy1, ix0 + r, iy1);
+      c.lineTo(ix1 - r, iy1);
+      c.quadraticCurveTo(ix1, iy1, ix1, iy1 - r);
+      c.lineTo(ix1, iy0);
+      c.closePath();
+    };
+    // claw feet
+    c.fillStyle = TH.cap;
+    [x0 + tw * 0.14, x1 - tw * 0.14].forEach((fx) => {
+      c.beginPath(); c.ellipse(fx, y1 + th * 0.06, tw * 0.045, th * 0.09, 0, 0, TAU); c.fill();
+    });
+    // tap, behind the rim on the right
+    const tapX = x1 - tw * 0.12, tapTop = y0 - th * 0.42;
+    c.strokeStyle = bold ? '#FFFFFF' : TH.day ? '#AEB4C0' : '#C9CFDC';
+    c.lineWidth = Math.max(3, tw * 0.03); c.lineCap = 'round'; c.lineJoin = 'round';
+    c.beginPath();
+    c.moveTo(tapX, y0); c.lineTo(tapX, tapTop + th * 0.08);
+    c.quadraticCurveTo(tapX, tapTop, tapX - tw * 0.05, tapTop);
+    c.lineTo(tapX - tw * 0.09, tapTop + th * 0.02);
+    c.stroke();
+    c.beginPath(); c.arc(tapX, tapTop + th * 0.2, tw * 0.018, 0, TAU); c.fillStyle = c.strokeStyle; c.fill();
+    // tub body
+    tubPath(x0, x1, y0, y1, rad);
+    c.fillStyle = tubCol; c.fill();
+    if (bold) { c.lineWidth = 2; c.strokeStyle = '#FFFFFF'; c.stroke(); }
+    const ix0 = x0 + wall, ix1 = x1 - wall, iy0 = y0 + wall * 0.6, iy1 = y1 - wall;
+    tubPath(ix0, ix1, iy0, iy1, rad * 0.8);
+    c.fillStyle = tubShade; c.fill();
+    const lvl = iy1 - shown * (iy1 - iy0 - th * 0.08);
+    const amp = t ? th * 0.012 : 0;
+    const surf = (xx) => lvl + Math.sin((xx - ix0) / tw * TAU * 1.6 + t / 900) * amp;
     c.save();
-    rr(c, x0 + 1, y0 + 1, jw - 2, jh - 2, rad); c.clip();
-    if (shown > 0.001) {
-      c.beginPath(); c.moveTo(x0, y0 + jh);
-      for (let i = 0; i <= 40; i++) { const xx = x0 + (i / 40) * jw; c.lineTo(xx, lvl - amp * 0.4 + Math.sin((i / 40) * TAU * 1.1 + t / 760 + 2) * amp * 1.2); }
-      c.lineTo(x0 + jw, y0 + jh); c.closePath();
-      c.fillStyle = rgba(TH.hi, 0.5); c.fill();
-      c.beginPath(); c.moveTo(x0, y0 + jh);
-      for (let i = 0; i <= 40; i++) { const xx = x0 + (i / 40) * jw; c.lineTo(xx, lvl + Math.sin((i / 40) * TAU * 1.5 - t / 980) * amp); }
-      c.lineTo(x0 + jw, y0 + jh); c.closePath();
-      const g = c.createLinearGradient(0, lvl, 0, y0 + jh);
-      g.addColorStop(0, TH.acc); g.addColorStop(1, rgba(TH.lo));
+    tubPath(ix0, ix1, iy0, iy1, rad * 0.8); c.clip();
+    if (shown > 0.002) {
+      c.beginPath(); c.moveTo(ix0, iy1 + 2);
+      for (let i = 0; i <= 40; i++) { const xx = ix0 + (i / 40) * (ix1 - ix0); c.lineTo(xx, surf(xx)); }
+      c.lineTo(ix1, iy1 + 2); c.closePath();
+      // bath water is always water-blue, with a hint of the chosen colour
+      const wTop = mixRGB(bold ? [80, 170, 255] : [140, 196, 236], TH.a, 0.18), wBot = mixRGB(bold ? [30, 120, 230] : [78, 146, 210], TH.a, 0.18);
+      const g = c.createLinearGradient(0, lvl, 0, iy1);
+      g.addColorStop(0, rgba(wTop, 0.97)); g.addColorStop(1, rgba(wBot));
       c.fillStyle = g; c.fill();
-      if (t) {
-        c.fillStyle = 'rgba(255,255,255,0.35)';
-        for (let i = 0; i < 7; i++) {
-          const u = (t / 5200 + rnd(i) ) % 1, by = y0 + jh - pad - u * (y0 + jh - pad - lvl);
-          if (by > lvl + 6) { c.beginPath(); c.arc(x0 + jw * (0.2 + 0.6 * rnd(i + 9)) + Math.sin(t / 600 + i) * 3, by, Math.max(1.2, jw * 0.016), 0, TAU); c.fill(); }
+      // little whirlpool by the plughole while it drains
+      if (S.dir !== 'fill' && o.running && shown > 0.04) {
+        const px = ix0 + (ix1 - ix0) * 0.24, py = lvl + th * 0.03;
+        c.strokeStyle = 'rgba(255,255,255,0.55)'; c.lineWidth = Math.max(1, tw * 0.006);
+        for (let k = 0; k < 3; k++) {
+          const a = (t || 0) / 380 + k * 2.1, rw = tw * (0.02 + k * 0.014);
+          c.beginPath(); c.ellipse(px, py, rw, rw * 0.32, 0, a, a + 2.2); c.stroke();
         }
       }
     }
-    c.restore();
-    // measuring marks
-    c.strokeStyle = TH.line; c.lineWidth = Math.max(1.5, jw * 0.018); c.lineCap = 'round';
-    for (let i = 1; i < 4; i++) {
-      const y = y0 + jh - pad - (i / 4) * inner;
-      c.beginPath(); c.moveTo(x0 + jw - pad * 1.2, y); c.lineTo(x0 + jw - pad * 1.2 - jw * (i === 2 ? 0.16 : 0.1), y); c.stroke();
+    // foam: a soft line of bubbles riding on the water
+    if (shown > 0.03) {
+      for (let i = 0; i < 22; i++) {
+        const fx = ix0 + (ix1 - ix0) * (0.04 + 0.92 * rnd(i * 4 + 7));
+        const fr = tw * (0.018 + 0.03 * rnd(i * 4 + 8)) * Math.min(1, shown * 4);
+        const fy = surf(fx) - fr * 0.25 + (t ? Math.sin(t / 900 + i) * 1.2 : 0);
+        c.fillStyle = 'rgba(255,255,255,' + (0.75 + 0.2 * rnd(i * 4 + 9)).toFixed(2) + ')';
+        c.beginPath(); c.arc(fx, fy, fr, 0, TAU); c.fill();
+      }
     }
-    rr(c, x0, y0, jw, jh, rad);
-    c.lineWidth = Math.max(1.5, jw * 0.03); c.strokeStyle = TH.line; c.stroke();
-    c.strokeStyle = TH.day ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.18)';
-    c.lineWidth = Math.max(2, jw * 0.045);
-    c.beginPath(); c.moveTo(x0 + jw * 0.14, y0 + jh * 0.2); c.lineTo(x0 + jw * 0.14, y0 + jh * 0.62); c.stroke();
-    rr(c, x0 - jw * 0.05, y0 - jw * 0.1, jw * 1.1, jw * 0.13, jw * 0.06);
-    c.fillStyle = TH.cap; c.fill();
+    // plug
+    c.fillStyle = bold ? '#FFFFFF' : 'rgba(40,46,66,0.6)';
+    c.beginPath(); c.ellipse(ix0 + (ix1 - ix0) * 0.24, iy1 - 2, tw * 0.025, th * 0.02, 0, 0, TAU); c.fill();
+    c.restore();
+    // water from the tap while it fills
+    if (S.dir === 'fill' && o.running && shown < 0.995) {
+      const sx = tapX - tw * 0.09, sy = tapTop + th * 0.03;
+      c.strokeStyle = 'rgba(160,205,240,0.9)'; c.lineWidth = Math.max(2, tw * 0.012);
+      c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx, surf(sx)); c.stroke();
+    }
+    // rim
+    rr(c, x0 - tw * 0.02, y0 - th * 0.06, tw * 1.04, th * 0.1, th * 0.05);
+    c.fillStyle = tubCol; c.fill();
+    if (bold) { c.lineWidth = 2; c.strokeStyle = '#FFFFFF'; c.stroke(); }
+    // the duck rides the water down
+    const dw = tw * 0.1;
+    const dx = ix0 + (ix1 - ix0) * (0.55 + (t ? 0.18 * Math.sin(t / 5200) : 0));
+    const dy = Math.min(iy1 - dw * 0.3, surf(dx)) - dw * 0.18 + (t ? Math.sin(t / 650) * dw * 0.04 : 0);
+    if (dy > y0 - dw * 0.2 || shown < 0.99) {
+      c.save();
+      c.translate(dx, dy);
+      c.rotate(t ? Math.sin(t / 900) * 0.06 : 0);
+      c.fillStyle = '#FFD24A';
+      c.beginPath(); c.ellipse(0, 0, dw * 0.62, dw * 0.36, 0, 0, TAU); c.fill();
+      c.beginPath(); c.ellipse(dw * 0.5, -dw * 0.25, dw * 0.24, dw * 0.2, 0.6, 0, TAU); c.fill();
+      c.beginPath(); c.arc(dw * 0.32, -dw * 0.5, dw * 0.3, 0, TAU); c.fill();
+      c.fillStyle = '#F28B30';
+      c.beginPath(); c.moveTo(dw * 0.56, -dw * 0.55); c.lineTo(dw * 0.86, -dw * 0.46); c.lineTo(dw * 0.56, -dw * 0.4); c.closePath(); c.fill();
+      c.fillStyle = '#2E2A26';
+      c.beginPath(); c.arc(dw * 0.4, -dw * 0.58, dw * 0.05, 0, TAU); c.fill();
+      c.fillStyle = 'rgba(255,255,255,0.5)';
+      c.beginPath(); c.ellipse(-dw * 0.15, -dw * 0.1, dw * 0.25, dw * 0.1, -0.2, 0, TAU); c.fill();
+      c.restore();
+    }
   }
 
   // Sunset: the whole sky moves from day to night. No numbers needed.
@@ -1542,7 +1605,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     c.globalAlpha = 1;
   }
 
-  const DRAW = { clock: drawClock, disc: drawDisc, sand: drawSand, bubbles: drawBubbles, water: drawWater, sunset: drawSunset, numbers: drawNumbers };
+  const DRAW = { clock: drawClock, sand: drawSand, bubbles: drawBubbles, bath: drawBath, sunset: drawSunset, numbers: drawNumbers };
 
   // ---------- the running timer ----------
   let T = null, lastTotal = S.secs * 1000;
@@ -1654,10 +1717,12 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       if (sec !== T.sec) { if (T.sec !== -1 && l > 0) tickSound(sec % 2); T.sec = sec; }
     }
     if (S.style === 'bubbles') {
-      const n = bubbleCount(T.total), k = Math.floor((T.total - l) / (T.total / n) + 1e-9);
-      if (T.k < 0) T.k = k;
-      if (k > T.k && running) { if (S.run === 'soft' && l > 0) popSound(); buzz(6); }
-      T.k = k;
+      const n = bubbleCount(T.total), seg = T.total / n, el = T.total - l;
+      const k = Math.floor(el / seg + 1e-9), kk = Math.floor(el / (seg / LITTLE) + 1e-9);
+      if (T.k < 0) { T.k = k; T.kk = kk; }
+      if (k > T.k && running) { if (S.run === 'soft' && l > 0) popSound(false); buzz(6); }
+      else if (kk > (T.kk || 0) && running && S.run === 'soft' && l > 0) popSound(true);
+      T.k = k; T.kk = kk;
     }
     if (running && bgN && !bgN.fading && l <= 8000 && l > 0 && ac) {
       bgN.fading = true;
@@ -1829,7 +1894,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const st = $('styles');
     STYLES.forEach((s) => {
       const bt = document.createElement('button');
-      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : '') + (s.id === 'clock' ? ' wide' : ''); bt.dataset.v = s.id;
+      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : '') + (s.id === 'clock' ? ' wide' : '') + (s.id === 'numbers' ? ' wide short' : ''); bt.dataset.v = s.id;
       bt.setAttribute('aria-label', s.name + '. ' + s.hint + '.');
       const cnv = document.createElement('canvas'); cnv.setAttribute('aria-hidden', 'true');
       const lab = document.createElement('div'); lab.className = 'label';
@@ -1925,13 +1990,11 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     document.querySelectorAll('#styles .style').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === S.style)));
     const bub = STYLES.find((s) => s.id === 'bubbles'), m = S.secs / 60;
     const bubHint = Number.isInteger(m) && m >= 2 && m <= 12 ? 'One pops each minute' : 'One pops at a time';
-    const waterHint = S.dir === 'fill' ? 'A jar slowly fills' : 'A jar slowly empties';
-    const discHint = S.dir === 'fill' ? 'The colour grows' : 'The colour shrinks away';
+    const bathHint = S.dir === 'fill' ? 'The bath slowly fills' : 'The bath slowly empties';
     document.querySelectorAll('#styles .style').forEach((b) => {
       const em = b.querySelector('em');
       if (b.dataset.v === 'bubbles') em.textContent = bubHint;
-      if (b.dataset.v === 'water') em.textContent = waterHint;
-      if (b.dataset.v === 'disc') em.textContent = discHint;
+      if (b.dataset.v === 'bath') em.textContent = bathHint;
     });
     void bub;
     slotHTML($('slotNow'), 'now');
