@@ -123,7 +123,37 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
   justify-content: center;
   touch-action: manipulation;
 }
-.dur output { flex: 1; text-align: center; font-size: 40px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.dial { flex: 1; min-width: 0; display: flex; justify-content: center; }
+.dial canvas { width: min(232px, 100%); aspect-ratio: 1 / 1; display: block; touch-action: none; cursor: grab; border-radius: 50%; }
+.durlabel { display: block; text-align: center; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: -2px; }
+.dialhint { text-align: center; margin-top: -10px; }
+.style.wide { grid-column: 1 / -1; height: 200px; }
+.saved { display: flex; flex-direction: column; gap: 8px; }
+.qsrow { display: flex; align-items: center; gap: 6px; }
+.qs {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 70px;
+  border: 0;
+  border-radius: 22px;
+  background: var(--chip);
+  padding: 10px 10px 10px 14px;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+body[data-look="bold"] .qs { box-shadow: inset 0 0 0 2px #FFFFFF; }
+.qs .emo { font-size: 32px; line-height: 1; flex: none; }
+.qs div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.qs b { font-size: 17px; font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qs small { font-size: 13px; color: var(--soft); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.qs .go { flex: none; background: var(--acc); color: var(--on-acc); border-radius: 16px; padding: 9px 14px; font-weight: 800; font-size: 15px; }
+.del { flex: none; min-width: 44px; height: 44px; border-radius: 22px; border: 0; background: transparent; color: var(--soft); font-size: 15px; font-weight: 800; cursor: pointer; padding: 0 10px; }
+.del.arm { background: #C55E5E; color: #FFFFFF; }
+.savebtn { margin-top: 4px; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg button {
   min-height: 44px;
@@ -425,6 +455,14 @@ body[data-look="day"] .startbar { background: linear-gradient(to top, var(--bg) 
 }
 body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
 .btnrow { display: flex; gap: 8px; width: 100%; }
+.linkbtn { min-height: 44px; padding: 0 16px; border: 0; background: transparent; color: var(--soft); font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+details.more { border-radius: 22px; background: var(--chip); padding: 0 16px; }
+details.more > summary { list-style: none; cursor: pointer; min-height: 56px; display: flex; align-items: center; justify-content: space-between; font-size: 17px; font-weight: 800; }
+details.more > summary::-webkit-details-marker { display: none; }
+details.more > summary svg { transition: transform 0.25s ease; color: var(--soft); }
+details.more[open] > summary svg { transform: rotate(180deg); }
+details.more[open] { padding-bottom: 18px; }
+body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
 .doneemo { font-size: 88px; line-height: 1.05; }
 .sheet {
   width: 100%;
@@ -502,12 +540,19 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
       </a>
     </div>
 
+    <div id="savedWrap" hidden>
+      <h2 class="sec" style="margin-top: 4px">Your timers <em>one tap to start</em></h2>
+      <div class="saved" id="saved"></div>
+    </div>
+
     <h1>How long?</h1>
     <div class="dur">
       <button class="step" id="minus" type="button" aria-label="Less time">−</button>
-      <output id="durOut" aria-live="polite">5 min</output>
+      <div class="dial"><canvas id="dial" role="slider" tabindex="0" aria-label="Turn the dial to set the minutes" aria-valuemin="1" aria-valuemax="180"></canvas></div>
       <button class="step" id="plus" type="button" aria-label="More time">+</button>
     </div>
+    <output id="durOut" class="durlabel" aria-live="polite">5 min</output>
+    <p class="small dialhint">Turn the dial, or tap a time</p>
     <div class="seg" id="durChips" aria-label="Quick times"></div>
 
     <h2 class="sec">Pick a timer</h2>
@@ -520,11 +565,15 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
       <button class="slot" id="slotNext" type="button"></button>
     </div>
     <p class="small">Shown while the timer runs, and big at the end, so everyone knows what comes next.</p>
+    <button class="ghost savebtn" id="saveBtn" type="button">⭐ Save as one of your timers</button>
 
     <h2 class="sec">Make it feel right</h2>
-    <p class="small">Pick a quick setup, or change anything below. It's all remembered for next time.</p>
+    <p class="small">Pick a quick setup. It's all remembered for next time.</p>
     <div class="profiles" id="profiles"></div>
-    <div id="rows" class="row" style="gap: 18px"></div>
+    <details class="more" id="more">
+      <summary>More options <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></summary>
+      <div id="rows" class="row" style="gap: 18px"></div>
+    </details>
 
     <p class="foot">No ads, no accounts, no WiFi needed. Everything you choose stays on this device.<br>Keep the screen open while the timer runs: phones don't let web apps make sounds when they're locked.</p>
   </div>
@@ -572,8 +621,8 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     <div class="doneemo" id="doneArt" aria-hidden="true"></div>
     <h1 id="doneTitle">All done</h1>
     <p id="doneText"></p>
-    <button class="start" id="again" type="button">Again</button>
-    <button class="ghost" id="finish" type="button">Finished</button>
+    <button class="start" id="finish" type="button">Finished</button>
+    <button class="linkbtn" id="again" type="button">Run it again</button>
   </div>
 </div>
 
@@ -600,7 +649,9 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
 
   // ---------- settings (remembered on this device) ----------
   const DEF = {
-    secs: 300, style: 'disc', now: null, next: null,
+    secs: 300, style: 'clock', now: null, next: null, saved: [],
+    speak: 'off', kidBtns: 'show',
+    clockFill: 'solid', clockFace: 'numbers', celebrate: 'sparkles', taps: 'sparkle',
     end: 'chime', repeat: 'once', warn: 2, run: 'off', vol: 70, mute: false,
     numbers: 'words', look: 'night', colour: 'amber', motion: reduceMotion ? 'still' : 'gentle', dir: 'empty', lock: 'anyone',
   };
@@ -609,6 +660,7 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
   function save() { try { localStorage.setItem('timer-settings', JSON.stringify(S)); } catch (e) {} }
 
   const STYLES = [
+    { id: 'clock', name: 'Clock', hint: 'Like a classroom timer' },
     { id: 'disc', name: 'Disc', hint: 'The colour shrinks away' },
     { id: 'sand', name: 'Sand', hint: 'An hourglass' },
     { id: 'bubbles', name: 'Bubbles', hint: 'One pops at a time' },
@@ -637,10 +689,10 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     ['🌳', 'Park'], ['🐶', 'Walk'], ['🛒', 'Shops'], ['🏊', 'Swimming'],
   ];
   const PROFILES = [
-    { id: 'quiet', e: '🤫', t: 'Quiet ears', d: 'No sounds at all. A soft glow at the end.', set: { end: 'light', run: 'off', repeat: 'once' } },
+    { id: 'quiet', e: '🤫', t: 'Quiet ears', d: 'No sounds at all. A soft glow at the end.', set: { end: 'light', run: 'off', repeat: 'once', speak: 'off' } },
     { id: 'clear', e: '🔔', t: 'Clear signal', d: 'A heads-up, then bells until someone taps.', set: { end: 'bells', repeat: 'until', warn: 2, numbers: 'exact' } },
     { id: 'calm', e: '🌙', t: 'No pressure', d: 'No numbers. It fills up instead of running out.', set: { numbers: 'off', dir: 'fill', warn: 0, end: 'chime', repeat: 'once' } },
-    { id: 'focus', e: '🎯', t: 'Low distraction', d: 'Nothing moves or ticks. Just the time.', set: { motion: 'still', run: 'off', numbers: 'words' } },
+    { id: 'focus', e: '🎯', t: 'Low distraction', d: 'Nothing moves or ticks. Just the time.', set: { motion: 'still', run: 'off', numbers: 'words', taps: 'off', celebrate: 'off', kidBtns: 'hide' } },
   ];
   const ROWS = [
     { h: 'Sounds' },
@@ -649,6 +701,8 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     { k: 'repeat', t: 'Play it', o: [['once', 'Once'], ['until', 'Until someone taps']] },
     { k: 'warn', t: 'Heads-up before the end', num: true, o: [['0', 'Off'], ['1', '1 min'], ['2', '2 min'], ['5', '5 min']],
       note: () => 'A soft sound and a message, so the end isn’t a surprise.' },
+    { k: 'speak', t: 'Say it out loud', o: [['off', 'Off'], ['on', 'On']],
+      note: () => 'A calm voice says the heads-up and what comes next. Good for children who don\u2019t read yet.' },
     { k: 'run', t: 'While it runs', o: [['off', 'Silent'], ['soft', 'Soft ticks']], note: () => 'Bubbles makes little pops instead of ticks.' },
     { k: 'vol', t: 'Volume', range: true },
     { h: 'Seeing' },
@@ -657,7 +711,15 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     { k: 'colour', t: 'Colour', swatch: true },
     { k: 'motion', t: 'Movement', o: [['gentle', 'Gentle'], ['still', 'Still']] },
     { k: 'dir', t: 'The timer', o: [['empty', 'Empties'], ['fill', 'Fills up']], note: () => 'Filling up can feel less like time running out.' },
+    { k: 'clockFill', t: 'Clock colours', o: [['solid', 'One colour'], ['rainbow', 'Rainbow']] },
+    { k: 'clockFace', t: 'Clock face', o: [['numbers', 'Numbers'], ['pictures', 'Animal pictures']], note: () => 'These two are for the Clock timer.' },
+    { k: 'celebrate', t: 'When it finishes', o: [['sparkles', 'Falling stars'], ['off', 'Nothing extra']] },
+    { h: 'Touch' },
+    { k: 'taps', t: 'Tapping the timer', o: [['sparkle', 'Makes sparkles'], ['off', 'Does nothing']],
+      note: () => 'Something for fidgety fingers to do while waiting. It never stops or changes the timer.' },
     { h: 'Grown-ups' },
+    { k: 'kidBtns', t: 'Buttons on the timer screen', o: [['show', 'Show them'], ['hide', 'Hide them']],
+      note: () => 'Hide the change-timer and sound buttons if they become something to fiddle with. Pause always stays.' },
     { k: 'lock', t: 'Pausing and stopping', o: [['anyone', 'Anyone can tap'], ['hold', 'Press and hold']],
       note: () => 'Press and hold stops little fingers ending the timer early.' },
   ];
@@ -1264,7 +1326,132 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     c.lineWidth = 1.5; c.strokeStyle = TH.line; c.stroke();
     if (shown > 0.003) { rr(c, cx - bw / 2, by, Math.max(bh, bw * shown), bh, bh / 2); c.fillStyle = TH.acc; c.fill(); }
   }
-  const DRAW = { disc: drawDisc, sand: drawSand, bubbles: drawBubbles, water: drawWater, sunset: drawSunset, numbers: drawNumbers };
+  // Clock: like the classroom timers. A 60-minute face where the wedge is the real time left.
+  const RAINBOW = ['#F07C7C', '#F5A962', '#F2D46B', '#8FCB86', '#7DB6E8', '#A79BE6'];
+  const RAINBOW_BOLD = ['#FF4D4D', '#FF9A2E', '#FFE03A', '#3EDB6B', '#3AA8FF', '#9D7CFF'];
+  const PICS = ['\u{1F431}', '\u{1F436}', '\u{1F430}', '\u{1F98A}', '\u{1F43B}', '\u{1F43C}', '\u{1F428}', '\u{1F42F}', '\u{1F981}', '\u{1F42E}', '\u{1F437}', '\u{1F438}'];
+  function clockScale(totalMs) {
+    const s = totalMs / 1000;
+    if (s <= 60) return { max: 60, lab: (i) => String(i * 5) };
+    if (s <= 3600) return { max: 3600, lab: (i) => String(i * 5) };
+    if (s <= 7200) return { max: 7200, lab: (i) => String(i * 10) };
+    return { max: 10800, lab: (i) => String(i * 15) };
+  }
+  function drawClock(c, b, f, t, o) {
+    const cx = b.x + b.w / 2, cy = b.y + b.h / 2, R = Math.min(b.w, b.h) * 0.48;
+    let wedge, sc;
+    if (o.dial) { sc = clockScale(3600000); wedge = o.wedge; }
+    else if (o.mini) { sc = clockScale(3600000); wedge = (S.dir === 'fill' ? 1 - f : f) * (20 / 60); }
+    else { sc = clockScale(o.total); const left = f * o.total; wedge = ((S.dir === 'fill' ? o.total - left : left) / 1000) / sc.max; }
+    wedge = clamp(wedge, 0, 1);
+    const bold = S.look === 'bold';
+    c.beginPath(); c.arc(cx, cy, R, 0, TAU);
+    c.fillStyle = TH.day ? '#FFFFFF' : bold ? '#000000' : 'rgba(255,255,255,0.06)'; c.fill();
+    c.lineWidth = Math.max(2, R * 0.035); c.strokeStyle = TH.line; c.stroke();
+    const small = R < 80;
+    c.lineCap = 'round';
+    for (let i = 0; i < 60; i++) {
+      const big = i % 5 === 0;
+      if (small && !big) continue;
+      const a = -Math.PI / 2 + (i / 60) * TAU, r1 = R * 0.93, r0 = R * (big ? 0.84 : 0.89);
+      c.lineWidth = big ? Math.max(1.5, R * 0.022) : Math.max(1, R * 0.01);
+      c.strokeStyle = big ? TH.ink : TH.line;
+      c.globalAlpha = big ? 0.75 : 1;
+      c.beginPath(); c.moveTo(cx + Math.cos(a) * r0, cy + Math.sin(a) * r0); c.lineTo(cx + Math.cos(a) * r1, cy + Math.sin(a) * r1); c.stroke();
+    }
+    c.globalAlpha = 1;
+    const pics = S.clockFace === 'pictures';
+    const lr = R * (pics ? 0.71 : 0.72), fs = R * (pics ? 0.15 : small ? 0.15 : 0.12);
+    c.textAlign = 'center'; c.textBaseline = 'middle';
+    c.font = '800 ' + fs + 'px ' + FONT;
+    c.fillStyle = TH.ink;
+    for (let i = 0; i < 12; i++) {
+      const a = -Math.PI / 2 + (i / 12) * TAU;
+      const x = cx + Math.cos(a) * lr, y = cy + Math.sin(a) * lr;
+      if (pics && i > 0) c.fillText(PICS[i], x, y + fs * 0.05);
+      else c.fillText(sc.lab(i), x, y + fs * 0.04);
+    }
+    const wr = R * 0.6;
+    const a0 = -Math.PI / 2, a1 = a0 + wedge * TAU;
+    if (wedge > 0.0004) {
+      if (S.clockFill === 'rainbow') {
+        const cols = bold ? RAINBOW_BOLD : RAINBOW;
+        for (let k = 0; k < 6; k++) {
+          const rO = wr * (1 - k * 0.13), rI = wr * (1 - (k + 1) * 0.13);
+          c.beginPath(); c.arc(cx, cy, rO, a0, a1); c.arc(cx, cy, rI, a1, a0, true); c.closePath();
+          c.fillStyle = cols[k]; c.fill();
+        }
+        c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, wr * 0.22, a0, a1); c.closePath();
+        c.fillStyle = cols[5]; c.fill();
+      } else {
+        const g = c.createRadialGradient(cx, cy, wr * 0.05, cx, cy, wr);
+        g.addColorStop(0, rgba(TH.hi)); g.addColorStop(1, TH.acc);
+        c.save();
+        if (TH.glow > 0.4 && !o.dial) { c.shadowColor = rgba(TH.a, 0.4 * TH.glow); c.shadowBlur = R * 0.08; }
+        c.beginPath(); c.moveTo(cx, cy); c.arc(cx, cy, wr, a0, a1); c.closePath();
+        c.fillStyle = g; c.fill();
+        c.restore();
+      }
+    }
+    // the knob, with little ridges like the real ones
+    const kr = R * 0.17;
+    c.save();
+    if (!bold) { c.shadowColor = 'rgba(0,0,0,0.3)'; c.shadowBlur = R * 0.05; c.shadowOffsetY = R * 0.015; }
+    c.beginPath();
+    for (let j = 0; j <= 40; j++) { const a = (j / 40) * TAU, r2 = kr * (j % 2 ? 0.92 : 1); j ? c.lineTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2) : c.moveTo(cx + Math.cos(a) * r2, cy + Math.sin(a) * r2); }
+    c.closePath();
+    c.fillStyle = bold ? '#FFFFFF' : TH.day ? '#ECEEF2' : '#D9DEEA'; c.fill();
+    c.restore();
+    c.beginPath(); c.arc(cx, cy, kr * 0.66, 0, TAU);
+    c.fillStyle = bold ? '#FFFFFF' : TH.day ? '#F7F8FA' : '#E8ECF5'; c.fill();
+    if (o.dial) {
+      // a grab handle on the edge of the colour, so it's clear the dial can be turned
+      const hx = cx + Math.cos(a1) * wr, hy = cy + Math.sin(a1) * wr;
+      c.beginPath(); c.arc(hx, hy, Math.max(9, R * 0.075), 0, TAU);
+      c.fillStyle = TH.acc; c.fill();
+      c.lineWidth = 3; c.strokeStyle = TH.day ? '#FFFFFF' : TH.bg; c.stroke();
+    }
+  }
+
+  // Sparkles when a child taps the screen, and falling stars at the end.
+  const RIP = [];
+  function star(c, x, y, r) {
+    c.beginPath();
+    for (let i = 0; i < 8; i++) { const a = (i / 8) * TAU - Math.PI / 2, rr2 = i % 2 ? r * 0.38 : r; i ? c.lineTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2) : c.moveTo(x + Math.cos(a) * rr2, y + Math.sin(a) * rr2); }
+    c.closePath(); c.fill();
+  }
+  function drawRipples(c, t) {
+    for (let i = RIP.length - 1; i >= 0; i--) {
+      const r = RIP[i], k = (t - r.t0) / 1100;
+      if (k >= 1) { RIP.splice(i, 1); continue; }
+      const e = 1 - Math.pow(1 - k, 3);
+      c.strokeStyle = rgba(TH.hi, (1 - k) * 0.55);
+      c.lineWidth = 1 + 2.5 * (1 - k);
+      c.beginPath(); c.arc(r.x, r.y, 10 + e * 80, 0, TAU); c.stroke();
+      c.fillStyle = rgba(TH.hi, 1 - k);
+      for (let j = 0; j < 9; j++) {
+        const a = (j / 9) * TAU + r.s, d = 8 + e * (50 + 25 * rnd(j + r.s * 10));
+        star(c, r.x + Math.cos(a) * d, r.y + Math.sin(a) * d + k * k * 18, 2 + 5 * (1 - k));
+      }
+    }
+  }
+  function drawCelebrate(c, dt) {
+    if (dt < 0 || dt > 5200) return;
+    const cols = [TH.acc, rgba(TH.hi), '#FFFFFF'].concat(S.clockFill === 'rainbow' ? RAINBOW : []);
+    for (let i = 0; i < 54; i++) {
+      const delay = rnd(i * 3 + 51) * 1400, k = (dt - delay) / 3600;
+      if (k < 0 || k > 1) continue;
+      const x = W * rnd(i * 3 + 50) + Math.sin(k * 6 + i) * 18;
+      const y = -20 + k * (H * 0.95);
+      const a = k < 0.12 ? k / 0.12 : 1 - (k - 0.12) / 0.88;
+      c.globalAlpha = clamp(a, 0, 1);
+      c.fillStyle = cols[i % cols.length];
+      star(c, x, y, 5 + rnd(i * 3 + 52) * 8);
+    }
+    c.globalAlpha = 1;
+  }
+
+  const DRAW = { clock: drawClock, disc: drawDisc, sand: drawSand, bubbles: drawBubbles, water: drawWater, sunset: drawSunset, numbers: drawNumbers };
 
   // ---------- the running timer ----------
   let T = null, lastTotal = S.secs * 1000;
@@ -1276,6 +1463,20 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
       else localStorage.removeItem('timer-run');
     } catch (e) {}
   }
+  function say(text) {
+    if (S.speak !== 'on' || S.mute || S.end === 'light') return;
+    try {
+      const sy = window.speechSynthesis;
+      if (!sy) return;
+      sy.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      u.rate = 0.88; u.pitch = 1.05; u.volume = clamp(level() * 1.2, 0.2, 1);
+      const v = sy.getVoices().find((x) => /en-GB/i.test(x.lang)) || sy.getVoices().find((x) => /^en/i.test(x.lang));
+      if (v) u.voice = v;
+      sy.speak(u);
+    } catch (e) {}
+  }
+  function nextPhrase() { return S.next ? ' Time for ' + S.next.l.toLowerCase() + '.' : ''; }
   function announce(s) { const l = $('live'); l.textContent = ''; setTimeout(() => { l.textContent = s; }, 50); }
 
   function startRun(ms) {
@@ -1288,6 +1489,7 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     wakeOn();
     buzz(10);
     announce('Timer started. ' + durLabel(Math.round(ms / 1000)) + '.');
+    say(spokenDur(Math.round(ms / 1000)) + '.' + (S.next ? ' Then ' + S.next.l.toLowerCase() + '.' : ''));
   }
   function showRun() {
     $('done').hidden = true;
@@ -1367,6 +1569,7 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     }
     if (running && l <= 0) finish();
   }
+  function spokenDur(sec) { if (sec < 60) return sec + ' seconds'; const m = Math.round(sec / 60); return m < 60 ? minsWord(m) : durLabel(sec).replace('hr', 'hour').replace('min', 'minutes'); }
   function headsUp() {
     const msg = minsWord(S.warn) + ' left';
     const bn = $('banner');
@@ -1376,11 +1579,12 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     glow('once');
     buzz([30, 80, 30]);
     announce(msg);
+    setTimeout(() => say(msg + '.'), S.end !== 'light' ? 900 : 0);
   }
   let repeatTimer = 0;
   function glow(mode) { const g = $('glow'); g.className = ''; void g.offsetWidth; if (mode) g.className = mode; }
   function finish() {
-    T.done = true; T.pausedLeft = null;
+    T.done = true; T.pausedLeft = null; T.doneAt = performance.now();
     persist();
     if (S.end !== 'light') playEnd();
     buzz([200, 120, 200]);
@@ -1391,6 +1595,7 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
       repeatTimer = setInterval(() => { if (++n > 5) { stopAlert(); return; } playEnd(); buzz([200, 120, 200]); }, 12000);
     }
     announce('All done.' + (S.next ? ' Next: ' + S.next.l + '.' : ''));
+    setTimeout(() => say('All done.' + nextPhrase()), S.end !== 'light' ? 1600 : 200);
     setTimeout(showDone, 1300);
   }
   function stopAlert() { clearInterval(repeatTimer); repeatTimer = 0; glow(''); }
@@ -1417,6 +1622,8 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
   const ICON_MUTE = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5L6 9H3v6h3l5 4z"></path><path d="M16 9.5l5 5M21 9.5l-5 5"></path></svg>';
   function tip(s) { tipEl.textContent = s; tipEl.classList.add('on'); clearTimeout(tipEl._t); tipEl._t = setTimeout(() => tipEl.classList.remove('on'), 1600); }
   function renderKid() {
+    $('bStyle').hidden = S.kidBtns === 'hide';
+    $('bSound').hidden = S.kidBtns === 'hide';
     const locked = S.lock === 'hold';
     $('pauseIcon').innerHTML = locked ? ICON_LOCK : ICON_PAUSE;
     bPause.setAttribute('aria-label', locked ? 'Grown-ups: press and hold to pause or stop' : 'Pause');
@@ -1519,7 +1726,7 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const st = $('styles');
     STYLES.forEach((s) => {
       const bt = document.createElement('button');
-      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : ''); bt.dataset.v = s.id;
+      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : '') + (s.id === 'clock' ? ' wide' : ''); bt.dataset.v = s.id;
       bt.setAttribute('aria-label', s.name + '. ' + s.hint + '.');
       const cnv = document.createElement('canvas'); cnv.setAttribute('aria-hidden', 'true');
       const lab = document.createElement('div'); lab.className = 'label';
@@ -1608,9 +1815,8 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     }
   }
   function renderSetup() {
-    $('durOut').textContent = durLabel(S.secs);
-    $('go').textContent = startLabel(S.secs);
-    document.querySelectorAll('#durChips button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === S.secs)));
+    renderDur();
+    renderSaved();
     document.querySelectorAll('#styles .style').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === S.style)));
     const bub = STYLES.find((s) => s.id === 'bubbles'), m = S.secs / 60;
     const bubHint = Number.isInteger(m) && m >= 2 && m <= 12 ? 'One pops each minute' : 'One pops at a time';
@@ -1641,6 +1847,127 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const vol = $('vol'); if (vol) vol.value = S.vol;
     ROWS.forEach((r) => { if (r.note) { const p = document.querySelector('[data-note="' + r.k + '"]'); if (p) p.textContent = r.note(); } });
   }
+
+  // ---------- turn the dial to set the time ----------
+  const dialCv = $('dial'), dc = dialCv.getContext('2d');
+  let dialW = 0, dialDrag = false, dialMin = 5;
+  function sizeDial() {
+    const r = dialCv.getBoundingClientRect();
+    dialW = r.width;
+    dialCv.width = Math.round(r.width * DPR); dialCv.height = Math.round(r.width * DPR);
+  }
+  function drawDial() {
+    if (!dialW) return;
+    dc.setTransform(DPR, 0, 0, DPR, 0, 0);
+    dc.clearRect(0, 0, dialW, dialW);
+    drawClock(dc, { x: 2, y: 2, w: dialW - 4, h: dialW - 4 }, 1, 0, { dial: true, wedge: Math.min(1, S.secs / 3600) });
+  }
+  function dialAngleMin(e) {
+    const r = dialCv.getBoundingClientRect();
+    const x = e.clientX - r.left - r.width / 2, y = e.clientY - r.top - r.height / 2;
+    let a = Math.atan2(x, -y);
+    if (a < 0) a += TAU;
+    return Math.round((a / TAU) * 60);
+  }
+  function setDialMin(m, jump) {
+    if (!jump && Math.abs(m - dialMin) > 30) m = dialMin > 30 ? 60 : 1; // don't wrap past the top
+    if (m === 0) m = dialMin > 30 ? 60 : 1;
+    m = clamp(m, 1, 60);
+    if (m === dialMin && S.secs === m * 60) return;
+    dialMin = m;
+    S.secs = m * 60;
+    // a soft click for every minute, like a real dial
+    if (!S.mute) tickSound(m % 2);
+    buzz(4);
+    renderDur();
+  }
+  dialCv.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    initAudio();
+    dialDrag = true;
+    try { dialCv.setPointerCapture(e.pointerId); } catch (err) {}
+    dialMin = S.secs <= 3600 ? Math.max(1, Math.round(S.secs / 60)) : 60;
+    setDialMin(dialAngleMin(e), true);
+  });
+  dialCv.addEventListener('pointermove', (e) => { if (dialDrag) setDialMin(dialAngleMin(e), false); });
+  ['pointerup', 'pointercancel'].forEach((ev) => dialCv.addEventListener(ev, () => { if (dialDrag) { dialDrag = false; save(); renderSetup(); } }));
+  dialCv.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowUp' || e.key === 'ArrowRight') { e.preventDefault(); S.secs = stepUp(S.secs); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowLeft') { e.preventDefault(); S.secs = stepDown(S.secs); }
+    else return;
+    save(); renderSetup();
+  });
+  function renderDur() {
+    $('durOut').textContent = durLabel(S.secs);
+    $('go').textContent = startLabel(S.secs);
+    dialCv.setAttribute('aria-valuenow', String(Math.round(S.secs / 60)));
+    dialCv.setAttribute('aria-valuetext', durLabel(S.secs));
+    document.querySelectorAll('#durChips button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === S.secs)));
+  }
+
+  // ---------- your timers: saved one-tap starts for parents ----------
+  function savedName(x) {
+    if (x.now && x.next) return x.now.l + ' → ' + x.next.l;
+    if (x.next) return 'Then ' + x.next.l.charAt(0).toLowerCase() + x.next.l.slice(1);
+    if (x.now) return x.now.l;
+    return (STYLES.find((st) => st.id === x.style) || STYLES[0]).name + ' timer';
+  }
+  function renderSaved() {
+    const list = Array.isArray(S.saved) ? S.saved : [];
+    $('savedWrap').hidden = !list.length;
+    const box = $('saved');
+    box.textContent = '';
+    list.forEach((x, i) => {
+      const row = document.createElement('div'); row.className = 'qsrow';
+      const bt = document.createElement('button'); bt.type = 'button'; bt.className = 'qs';
+      const e = document.createElement('span'); e.className = 'emo'; e.setAttribute('aria-hidden', 'true');
+      e.textContent = (x.next && x.next.e) || (x.now && x.now.e) || '⏱️';
+      const tx = document.createElement('div');
+      const b = document.createElement('b'); b.textContent = savedName(x);
+      const sm = document.createElement('small');
+      sm.textContent = durLabel(x.secs) + ' · ' + ((STYLES.find((st) => st.id === x.style) || STYLES[0]).name);
+      tx.append(b, sm);
+      const go = document.createElement('span'); go.className = 'go'; go.textContent = 'Start';
+      bt.append(e, tx, go);
+      bt.setAttribute('aria-label', 'Start ' + savedName(x) + ', ' + durLabel(x.secs));
+      bt.addEventListener('click', () => {
+        Object.assign(S, { secs: x.secs, style: x.style, now: x.now || null, next: x.next || null });
+        save(); renderSetup();
+        startRun(x.secs * 1000);
+      });
+      const del = document.createElement('button'); del.type = 'button'; del.className = 'del';
+      del.textContent = '✕'; del.setAttribute('aria-label', 'Remove ' + savedName(x));
+      del.addEventListener('click', () => {
+        // two taps to remove, so a slip doesn't lose a saved timer
+        if (!del.classList.contains('arm')) {
+          del.classList.add('arm'); del.textContent = 'Remove?';
+          clearTimeout(del._t); del._t = setTimeout(() => { del.classList.remove('arm'); del.textContent = '✕'; }, 3000);
+          return;
+        }
+        S.saved = list.filter((_, j) => j !== i); save(); renderSaved();
+      });
+      row.append(bt, del);
+      box.append(row);
+    });
+  }
+  $('saveBtn').addEventListener('click', () => {
+    const item = { secs: S.secs, style: S.style, now: S.now, next: S.next };
+    const key = JSON.stringify(item);
+    S.saved = [item].concat((S.saved || []).filter((x) => JSON.stringify(x) !== key)).slice(0, 8);
+    save(); renderSaved();
+    const btn = $('saveBtn');
+    btn.textContent = '✓ Saved to your timers, at the top';
+    clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = '⭐ Save as one of your timers'; }, 2600);
+    buzz(10);
+  });
+
+  // ---------- taps on the running timer make sparkles ----------
+  cv.addEventListener('pointerdown', (e) => {
+    if (S.taps !== 'sparkle' || !T || T.done) return;
+    RIP.push({ x: e.clientX, y: e.clientY, t0: performance.now(), s: Math.random() * 6 });
+    if (RIP.length > 14) RIP.shift();
+    buzz(5);
+  });
 
   // now / next picker
   let pickFor = 'next';
@@ -1687,9 +2014,11 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
       m.w = r.width; m.h = r.height;
       m.cv.width = Math.round(r.width * DPR); m.cv.height = Math.round(r.height * DPR);
     });
+    sizeDial();
     layoutBox();
   }
   function drawTiles(t) {
+    drawDial();
     const tm = S.motion === 'gentle' ? t : 0;
     tiles.forEach((m) => {
       if (!m.w) return;
@@ -1705,6 +2034,7 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
       const f = ph < 0.85 ? 1 - ph / 0.85 : 0;
       const o = { mini: true, running: f > 0 && f < 1, total: cyc * 0.85 };
       if (m.id === 'sunset') { drawSunset(c, { x: 0, y: 0, w: m.w, h: m.h }, f, tm, o); return; }
+      if (m.id === 'clock') { drawBg(c, m.w, m.h); drawClock(c, { x: m.w - (m.h - 16) - 14, y: 8, w: m.h - 16, h: m.h - 16 }, f, tm, o); return; }
       drawBg(c, m.w, m.h);
       DRAW[m.id](c, { x: 10, y: 10, w: m.w - 20, h: m.h - 60 }, f, tm, o);
     });
@@ -1720,6 +2050,8 @@ body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const o = { running: T.pausedLeft == null && !T.done, total: T.total, left: l };
     if (S.style === 'sunset') drawSunset(c, { x: 0, y: 0, w: W, h: H }, f, tm, o);
     else { drawBg(c, W, H); DRAW[S.style](c, BOX, f, tm, o); }
+    if (RIP.length) drawRipples(c, t);
+    if (T.done && T.doneAt && S.celebrate === 'sparkles') drawCelebrate(c, t - T.doneAt);
     renderLeft(false);
   }
   function frame(t) {
