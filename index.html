@@ -557,6 +557,61 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   user-select: text;
 }
 .own .done-btn { min-height: 50px; }
+
+/* ---------- iPad / large screens ---------- */
+.colA, .colB { display: contents; }
+@media (min-width: 740px) and (min-height: 600px) {
+  .setup-in { max-width: 720px; gap: 16px; padding-left: max(40px, env(safe-area-inset-left, 0px)); padding-right: max(40px, env(safe-area-inset-right, 0px)); padding-top: calc(env(safe-area-inset-top, 0px) + 32px); padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 140px); }
+  .brand small { font-size: 15px; }
+  .brand span { font-size: 40px; }
+  .homelink { min-height: 52px; font-size: 17px; padding: 0 20px 0 18px; border-radius: 26px; }
+  .setup h1 { font-size: 36px; }
+  .sec { font-size: 26px; margin-top: 26px; }
+  .sec em { font-size: 16px; }
+  .small, .foot { font-size: 15px; }
+  .dial canvas { width: min(340px, 100%); }
+  .step { width: 72px; height: 72px; border-radius: 36px; font-size: 34px; }
+  .durlabel { font-size: 46px; }
+  .seg button { min-height: 52px; padding: 0 18px; font-size: 17px; border-radius: 16px; }
+  .styles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .style { height: 190px; border-radius: 28px; }
+  .style.wide { height: 220px; }
+  .style.wide.short { height: 190px; grid-column: span 2; }
+  .style .label { left: 18px; bottom: 16px; }
+  .style .label b { font-size: 22px; }
+  .style .label em { font-size: 14px; }
+  .profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+  .prof b { font-size: 18px; }
+  .prof span { font-size: 14px; }
+  .slot { min-height: 140px; }
+  .slot .emo { font-size: 48px; }
+  .sw { width: 54px; height: 54px; border-radius: 27px; }
+  .start { max-width: 560px; min-height: 68px; font-size: 22px; border-radius: 34px; }
+  .card { max-width: 440px; padding: 36px 30px 28px; }
+  .panel.bottom { align-items: center; padding: 24px; }
+  .panel.bottom .sheet { max-width: 600px; border-radius: 32px; }
+}
+@media (min-width: 900px) and (min-height: 600px) {
+  .setup-in {
+    max-width: 1180px;
+    display: grid;
+    grid-template-columns: minmax(340px, 400px) minmax(0, 1fr);
+    grid-template-areas: "top top" "a saved" "a b";
+    grid-template-rows: auto auto 1fr;
+    column-gap: 48px;
+    row-gap: 0;
+  }
+  .toprow { grid-area: top; margin-bottom: 8px; }
+  #savedWrap { grid-area: saved; }
+  .colA { grid-area: a; display: flex; flex-direction: column; gap: 16px; align-self: start; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 20px); padding-top: 10px; }
+  .colB { grid-area: b; display: flex; flex-direction: column; gap: 16px; }
+  .colB > .sec:first-child { margin-top: 10px; }
+  .dial canvas { width: min(300px, 100%); }
+  .colA .seg { justify-content: center; }
+  .startbar { right: auto; width: calc(max(40px, (100vw - 1180px) / 2 + 40px) + 420px); box-sizing: border-box; padding-left: max(40px, calc((100vw - 1180px) / 2 + 40px)); padding-right: 20px; justify-content: flex-start; background: none; }
+  body[data-look] .startbar { background: none; }
+  .start { max-width: 400px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+}
 </style>
 </head>
 <body data-look="night">
@@ -578,6 +633,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       <div class="saved" id="saved"></div>
     </div>
 
+    <div class="colA">
     <h1>How long?</h1>
     <div class="dur">
       <button class="step" id="minus" type="button" aria-label="Less time">−</button>
@@ -587,7 +643,9 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     <output id="durOut" class="durlabel" aria-live="polite">5 min</output>
     <p class="small dialhint">Turn the dial, or tap a time</p>
     <div class="seg" id="durChips" aria-label="Quick times"></div>
+    </div>
 
+    <div class="colB">
     <h2 class="sec">Pick a timer</h2>
     <div class="styles" id="styles"></div>
 
@@ -612,6 +670,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     </details>
 
     <p class="foot">No ads, no accounts, no WiFi needed. Everything you choose stays on this device.<br>Keep the screen open while the timer runs: phones don't let web apps make sounds when they're locked.</p>
+    </div>
   </div>
   <div class="startbar"><button class="start" id="go" type="button">Start</button></div>
 </main>
