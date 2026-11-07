@@ -914,12 +914,36 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
       }
       if (ac.state !== 'running') { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); }
     } catch (e) {}
-    // A timer should be heard even with the ring switch on silent.
-    try { if (navigator.audioSession && S.end !== 'light') navigator.audioSession.type = 'playback'; } catch (e) {}
+    sessionType('ambient');
+    audioRestSoon();
+  }
+  // How the sound engine behaves on the phone. 'playback' is heard with the ring switch on silent, but it also
+  // makes iOS treat the page as a music player (a "localhost" player on the lock screen, and it takes over the
+  // Dynamic Island). So the timer uses it only while an ending or heads-up sound is actually playing, and
+  // otherwise rests: 'ambient' (mixes with other sound), and the engine is paused when nothing needs it.
+  function sessionType(t) { try { if (navigator.audioSession && navigator.audioSession.type !== t) navigator.audioSession.type = t; } catch (e) {} }
+  try {
+    if ('mediaSession' in navigator && window.MediaMetadata) navigator.mediaSession.metadata = new MediaMetadata({ title: 'Timer', artist: 'Little Easier' });
+  } catch (e) {}
+  let restT = 0;
+  function audioRestSoon(ms) { clearTimeout(restT); restT = setTimeout(audioRest, ms || 5000); }
+  function audioNeeded() {
+    if (document.hidden) return false;
+    if (bgN) return true; // a background sound is playing
+    return !!(T && !T.done && T.pausedLeft == null && S.run === 'soft' && !run.hidden); // ticks or little pops
+  }
+  function audioRest() {
+    sessionType('ambient');
+    if (audioNeeded()) { audioRestSoon(); return; }
+    try { if (ac && ac.state === 'running') { const pr = ac.suspend(); if (pr && pr.catch) pr.catch(() => {}); } } catch (e) {}
   }
   function level() { return S.mute ? 0 : clamp(S.vol / 100, 0, 1); }
   function bell(f, at, g, dec) {
     if (!ac) return;
+    // endings and heads-ups should be heard even with the ring switch on silent
+    if (S.end !== 'light') sessionType('playback');
+    if (ac.state !== 'running') { try { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
+    audioRestSoon(Math.max(5000, (at + (dec || 2)) * 1000 + 1500));
     const v = level() * g;
     if (v <= 0.0005) return;
     const t = ac.currentTime + at;
@@ -961,6 +985,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   function playWarn() { initAudio(); bell(587.33, 0, 0.2, 1.8); bell(880, 0.26, 0.14, 2.1); }
   function tickSound(alt) {
     if (!ac) return;
+    if (ac.state !== 'running') { try { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
     const v = level() * 0.09;
     if (v <= 0.0005) return;
     const t = ac.currentTime;
@@ -975,6 +1000,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   }
   function popSound(small) {
     if (!ac) return;
+    if (ac.state !== 'running') { try { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
     const v = level() * (small ? 0.16 : 0.3);
     if (v <= 0.0005) return;
     const t = ac.currentTime;
@@ -1011,6 +1037,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   function bgTarget() { return S.mute ? 0 : clamp(S.bgVol / 100, 0, 1) * 0.5; }
   function bgStart() {
     if (!ac || S.bg === 'off' || bgN) return;
+    if (ac.state !== 'running') { try { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
     try {
       const t = ac.currentTime;
       const src = ac.createBufferSource(); src.loop = true;
@@ -2464,6 +2491,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   }
   function wakeOff() { try { if (wl) wl.release(); } catch (e) {} wl = null; }
   document.addEventListener('visibilitychange', () => {
+    if (document.hidden) { clearTimeout(restT); audioRest(); } // left the app or locked: the phone's own alarm takes over
     if (document.visibilityState === 'visible') {
       if (T && !T.done) wakeOn();
       if (ac && ac.state !== 'running') { try { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
