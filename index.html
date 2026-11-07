@@ -128,6 +128,8 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .dial canvas { width: min(232px, 100%); aspect-ratio: 1 / 1; display: block; touch-action: none; cursor: grab; border-radius: 50%; }
 .durlabel { display: block; text-align: center; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: -2px; }
 .dialhint { text-align: center; margin-top: -10px; }
+.style.clockt::after { display: none; } /* the clock sits to the right of its label, so no fade is needed */
+.dial canvas.preview { border-radius: min(28px, 10%); cursor: default; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
 .style.wide, .style.long { grid-column: 1 / -1; height: 200px; }
 .style.wide.short { height: 132px; }
 .savedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
@@ -792,9 +794,9 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   function setPic(el,e){if(PIC[e]){el.innerHTML='<svg class="pic" viewBox="-20 -20 40 40" aria-hidden="true"><rect x="-19" y="-19" width="38" height="38" rx="12" fill="#FFF8EC"/><g filter="url(#tw-hand)" stroke="#2E3A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+PIC[e]+'</g></svg>'}else el.textContent=e}
   const COLOURS = {
     teal: { name: 'Teal', night: '#6FC6C1', day: '#2B8783', bold: '#3FE6DC' },
-    coral: { name: 'Coral', night: '#F29A9F', day: '#D45A6E', bold: '#FF7088' },
+    coral: { name: 'Coral', night: '#F5A08A', day: '#D8613F', bold: '#FF7A55' },
     amber: { name: 'Sand', night: '#E8B65A', day: '#D49A34', bold: '#FFC83D' },
-    sage: { name: 'Sage', night: '#8FC1B5', day: '#5A9A8B', bold: '#4FF0C2' },
+    sage: { name: 'Leaf', night: '#A4D17E', day: '#5E9A3A', bold: '#86F25A' },
     sky: { name: 'Sky', night: '#86B7EA', day: '#4D8CCB', bold: '#59B6FF' },
     rose: { name: 'Rose', night: '#EC9DB8', day: '#D06A8E', bold: '#FF77AA' },
     lilac: { name: 'Lilac', night: '#B7A8EE', day: '#8775D2', bold: '#C29BFF' },
@@ -2286,7 +2288,8 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     const kid = document.querySelector('.kid').getBoundingClientRect();
     const top = nnbar.hidden ? kid.bottom + 18 : nnbar.getBoundingClientRect().bottom + 18;
     const lr = leftEl.getBoundingClientRect();
-    const bottom = leftEl.classList.contains('off') ? lr.bottom - 6 : lr.top - 14;
+    let bottom = leftEl.classList.contains('off') ? lr.bottom - 6 : lr.top - 14;
+    if (!lr.height || bottom < top + 140) bottom = window.innerHeight - 90; // not laid out yet: use the screen
     const side = Math.max(20, W * 0.06);
     BOX = { x: side, y: top, w: W - side * 2, h: Math.max(140, bottom - top) };
   }
@@ -2479,7 +2482,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     const st = $('styles');
     STYLES.forEach((s) => {
       const bt = document.createElement('button');
-      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : '') + (s.id === 'clock' ? ' wide' : '') + (s.id === 'train' ? ' long' : '') + (s.id === 'numbers' ? ' wide short' : ''); bt.dataset.v = s.id;
+      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : '') + (s.id === 'clock' ? ' wide clockt' : '') + (s.id === 'train' ? ' long' : '') + (s.id === 'numbers' ? ' wide short' : ''); bt.dataset.v = s.id;
       bt.setAttribute('aria-label', s.name + '. ' + s.hint + '.');
       const cnv = document.createElement('canvas'); cnv.setAttribute('aria-hidden', 'true');
       const lab = document.createElement('div'); lab.className = 'label';
@@ -2616,11 +2619,17 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     dialW = r.width;
     dialCv.width = Math.round(r.width * DPR); dialCv.height = Math.round(r.width * DPR);
   }
-  function drawDial() {
+  function drawDial(t) {
     if (!dialW) return;
     dc.setTransform(DPR, 0, 0, DPR, 0, 0);
     dc.clearRect(0, 0, dialW, dialW);
-    drawClock(dc, { x: 2, y: 2, w: dialW - 4, h: dialW - 4 }, 1, 0, { dial: true, wedge: Math.min(1, S.secs / 3600) });
+    if (S.style === 'clock' || !DRAW[S.style]) { drawClock(dc, { x: 2, y: 2, w: dialW - 4, h: dialW - 4 }, 1, 0, { dial: true, wedge: Math.min(1, S.secs / 3600) }); return; }
+    // any other timer: a live preview of how it will start, for the time chosen
+    const W2 = dialW, tot = S.secs * 1000, o = { running: true, total: tot, left: tot, preview: true };
+    dc.save(); rr(dc, 0, 0, W2, W2, Math.min(28, W2 * 0.1)); dc.clip();
+    if (S.style === 'sunset') withArt(dc, 'sunset', { x: 0, y: 0, w: W2, h: W2 }, () => drawSunset(dc, { x: 0, y: 0, w: W2, h: W2 }, 1, t, o));
+    else { drawBg(dc, W2, W2); withArt(dc, S.style, { x: 0, y: 0, w: W2, h: W2 }, () => DRAW[S.style](dc, { x: W2 * 0.06, y: W2 * 0.06, w: W2 * 0.88, h: W2 * 0.88 }, 1, t, o)); }
+    dc.restore();
   }
   function dialAngleMin(e) {
     const r = dialCv.getBoundingClientRect();
@@ -2642,6 +2651,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     renderDur();
   }
   dialCv.addEventListener('pointerdown', (e) => {
+    if (S.style !== 'clock') return; // only the Clock is turned; other timers show a preview here
     e.preventDefault();
     initAudio();
     dialDrag = true;
@@ -2662,6 +2672,9 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     $('go').textContent = startLabel(S.secs);
     dialCv.setAttribute('aria-valuenow', String(Math.round(S.secs / 60)));
     dialCv.setAttribute('aria-valuetext', durLabel(S.secs));
+    const isDial = S.style === 'clock';
+    dialCv.classList.toggle('preview', !isDial);
+    document.querySelector('.dialhint').textContent = isDial ? 'Turn the dial, or tap a time' : 'Tap a time, or use − and +';
     document.querySelectorAll('#durChips button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.v) === S.secs)));
   }
 
@@ -2778,10 +2791,19 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     });
     sizeDial();
     layoutBox();
+    // two-column layout: pin the left column where it starts, so it doesn't drift up as the right side scrolls
+    const ca = document.querySelector('.colA'), tr = document.querySelector('.toprow');
+    if (ca && tr) {
+      ca.style.top = '';
+      if (getComputedStyle(ca).position === 'sticky') {
+        const t0 = tr.getBoundingClientRect().bottom + window.scrollY + 8;
+        if (t0 + ca.getBoundingClientRect().height <= window.innerHeight - 110) ca.style.top = Math.round(t0) + 'px';
+      }
+    }
   }
   function drawTiles(t) {
-    drawDial();
     const tm = S.motion === 'gentle' ? t : 0;
+    drawDial(tm);
     tiles.forEach((m) => {
       if (!m.w) return;
       const c = m.c;
@@ -2796,7 +2818,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
       const f = ph < 0.85 ? 1 - ph / 0.85 : 0;
       const o = { mini: true, running: f > 0 && f < 1, total: cyc * 0.85 };
       if (m.id === 'sunset') { withArt(c, 'sunset', { x: 0, y: 0, w: m.w, h: m.h }, () => drawSunset(c, { x: 0, y: 0, w: m.w, h: m.h }, f, tm, o)); return; }
-      if (m.id === 'clock') { const cs = Math.min(m.h - 26, m.w * 0.5); drawBg(c, m.w, m.h); drawClock(c, { x: m.w - cs - 14, y: 8, w: cs, h: cs }, f, tm, o); return; }
+      if (m.id === 'clock') { const cs = Math.min(m.h - 24, m.w * 0.46); drawBg(c, m.w, m.h); drawClock(c, { x: m.w - cs - 14, y: (m.h - cs) / 2, w: cs, h: cs }, f, tm, o); return; }
       drawBg(c, m.w, m.h);
       withArt(c, m.id, { x: 0, y: 0, w: m.w, h: m.h }, () => DRAW[m.id](c, { x: 10, y: 10, w: m.w - 20, h: m.h - (m.lh || 60) }, f, tm, o));
     });
@@ -2805,6 +2827,9 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     const l = leftMs();
     checkEvents(l);
     if (!T) return;
+    // measure the picture's space every frame: it must follow rotation and the app reopening mid-timer
+    layoutBox();
+    if (cv.width !== Math.round(window.innerWidth * DPR) || cv.height !== Math.round(window.innerHeight * DPR)) resize();
     const f = T.total ? clamp(l / T.total, 0, 1) : 0;
     const tm = S.motion === 'gentle' ? t : 0;
     const c = cx2;
