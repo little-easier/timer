@@ -291,6 +291,7 @@ body[data-look="bold"] .style { box-shadow: inset 0 0 0 2px #FFFFFF; }
 .row > span, .row > label { font-size: 16px; font-weight: 800; }
 .small { font-size: 13px; color: var(--soft); font-weight: 600; margin: 0; line-height: 1.4; }
 .swatches { display: flex; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 420px) { .swatches { gap: 8px; } .sw { width: 40px; height: 40px; border-radius: 20px; } } /* all seven on one line on phones */
 .sw { width: 46px; height: 46px; border-radius: 23px; border: 0; cursor: pointer; }
 .sw[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--bg), 0 0 0 6px var(--ink); }
 input[type="range"] { width: 100%; accent-color: var(--acc); min-height: 32px; }
@@ -675,7 +676,9 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
       <button class="slot" id="slotNext" type="button"></button>
     </div>
     <p class="small">Shown while the timer runs, and big at the end, so everyone knows what comes next.</p>
-    <p class="small">Sounds, the end of the timer, counting up and more are in <button class="inlink" id="setLink" type="button">Settings</button>.</p>
+    <h2 class="sec">When time's up</h2>
+    <div class="seg" id="endChips" role="group" aria-label="When time's up"></div>
+    <p class="small" id="endSum"></p>
 
     <p class="foot">No ads, no accounts, no WiFi needed. Everything you choose stays on this device.<span class="webonly"><br>Keep the screen open while the timer runs: phones don't let web apps make sounds when they're locked.</span></p>
     </div>
@@ -822,7 +825,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   ];
   const ROWS = [
     { h: 'Sounds' },
-    { k: 'end', t: 'At the end', o: [['chime', 'Chime'], ['bells', 'Bells'], ['rise', 'Rising notes'], ['light', 'Light only']],
+    { k: 'end', t: 'At the end', o: [['chime', 'Chime'], ['bells', 'Bells'], ['rise', 'Rising notes'], ['light', 'Silent glow']],
       note: () => S.end === 'light' ? 'No sound. The screen glows softly instead.' : 'Tap one to hear it.' },
     { k: 'repeat', t: 'Play it', o: [['once', 'Once'], ['until', 'Until someone taps']] },
     { k: 'warn', t: 'Heads-up before the end', num: true, o: [['0', 'Off'], ['1', '1 min'], ['2', '2 min'], ['5', '5 min']],
@@ -909,7 +912,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
         out.connect(comp);
         comp.connect(ac.destination);
       }
-      if (ac.state !== 'running') ac.resume();
+      if (ac.state !== 'running') { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); }
     } catch (e) {}
     // A timer should be heard even with the ring switch on silent.
     try { if (navigator.audioSession && S.end !== 'light') navigator.audioSession.type = 'playback'; } catch (e) {}
@@ -2463,7 +2466,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
       if (T && !T.done) wakeOn();
-      if (ac && ac.state !== 'running') { try { ac.resume(); } catch (e) {} }
+      if (ac && ac.state !== 'running') { try { const pr = ac.resume(); if (pr && pr.catch) pr.catch(() => {}); } catch (e) {} }
     }
   });
 
@@ -2553,7 +2556,24 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
       if (r.note) { const p = document.createElement('p'); p.className = 'small'; p.dataset.note = r.k; row.append(p); }
       rows.append(row);
     });
+    // the end sound is on the main page too: it's the moment the timer is for, and it changes with the place
+    // (a quiet classroom or a busy kitchen). Tapping one plays it.
+    const ec = $('endChips');
+    ROWS.find((r) => r.k === 'end').o.forEach(([v, l]) => {
+      const bt = document.createElement('button'); bt.type = 'button'; bt.textContent = l; bt.dataset.v = v;
+      bt.addEventListener('click', () => { S.end = v; save(); initAudio(); const m = S.mute; S.mute = false; playEnd(); S.mute = m; renderSetup(); });
+      ec.append(bt);
+    });
     $('go').addEventListener('click', () => startRun(S.secs * 1000));
+  }
+  // one line saying what else happens, so nothing in Settings is a surprise
+  function endSummary() {
+    const bits = [];
+    bits.push(S.warn > 0 ? 'A heads-up ' + S.warn + ' min before the end' : 'No heads-up');
+    if (S.end !== 'light') bits.push(S.repeat === 'until' ? 'the sound repeats until someone taps' : 'the sound plays once');
+    bits.push(S.lock === 'hold' ? 'press and hold to stop' : 'anyone can tap to stop');
+    const t = bits.join(', ') + '. ';
+    return t.charAt(0).toUpperCase() + t.slice(1);
   }
   function slotHTML(el, kind) {
     const item = S[kind];
@@ -2598,6 +2618,9 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
       const on = Object.keys(p.set).every((k) => String(S[k]) === String(p.set[k]));
       b.setAttribute('aria-pressed', String(on));
     });
+    document.querySelectorAll('#endChips button').forEach((b) => b.setAttribute('aria-pressed', String(S.end === b.dataset.v)));
+    const es = $('endSum');
+    if (es) { es.textContent = endSummary(); const a = document.createElement('button'); a.type = 'button'; a.className = 'inlink'; a.textContent = 'Change in Settings'; a.addEventListener('click', openSettings); es.append(a); }
     document.querySelectorAll('#rows .seg').forEach((seg) => {
       const k = seg.dataset.key;
       seg.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(String(S[k]) === b.dataset.v)));
@@ -2737,7 +2760,6 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
   function openSettings() { setPanel.hidden = false; setPanel.querySelector('.sheet').scrollTop = 0; }
   function closeSettings() { setPanel.hidden = true; renderSetup(); }
   $('setBtn').addEventListener('click', openSettings);
-  $('setLink').addEventListener('click', openSettings);
   $('setClose').addEventListener('click', closeSettings);
   setPanel.addEventListener('click', (e) => { if (e.target === setPanel) closeSettings(); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !setPanel.hidden) closeSettings(); });
