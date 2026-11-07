@@ -128,7 +128,7 @@ button:focus-visible, a:focus-visible, input:focus-visible { outline: 3px solid 
 .dial canvas { width: min(232px, 100%); aspect-ratio: 1 / 1; display: block; touch-action: none; cursor: grab; border-radius: 50%; }
 .durlabel { display: block; text-align: center; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; margin-top: -2px; }
 .dialhint { text-align: center; margin-top: -10px; }
-.style.wide { grid-column: 1 / -1; height: 200px; }
+.style.wide, .style.long { grid-column: 1 / -1; height: 200px; }
 .style.wide.short { height: 132px; }
 .savedhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
 .savedhead .linkbtn { padding: 0 4px; }
@@ -183,7 +183,15 @@ body[data-look="bold"] .qs { box-shadow: inset 0 0 0 2px #FFFFFF; }
 .saved.editing .qs { animation: jiggle 0.4s ease-in-out infinite alternate; }
 @keyframes jiggle { from { transform: rotate(-1deg); } to { transform: rotate(1deg); } }
 @media (prefers-reduced-motion: reduce) { .saved.editing .qs { animation: none; } }
-.savebtn { margin-top: 4px; }
+.topbtns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+button.homelink { border: 0; cursor: pointer; font-family: inherit; touch-action: manipulation; }
+.inlink { border: 0; background: none; padding: 0; font: inherit; color: var(--acc); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+html.in-app .webonly { display: none; }
+.savebtn { flex: none; min-height: 60px; padding: 0 20px; margin-left: 10px; border: 0; border-radius: 30px; background: var(--card); color: var(--ink); font-size: 17px; font-weight: 800; cursor: pointer; pointer-events: auto; touch-action: manipulation; box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12); }
+.savebtn span { color: var(--acc); }
+body[data-look="bold"] .savebtn { box-shadow: inset 0 0 0 2px #FFFFFF; }
+.sheet h3.sub { margin: 4px 0 0; font-size: 18px; font-weight: 800; }
+#settings .sheet { max-width: 640px; }
 .seg { display: flex; flex-wrap: wrap; gap: 6px; }
 .seg button {
   min-height: 44px;
@@ -212,7 +220,10 @@ body[data-look="bold"] .seg button, body[data-look="bold"] .prof, body[data-look
   touch-action: manipulation;
 }
 .style canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
-.style .label { position: absolute; left: 14px; bottom: 12px; display: flex; flex-direction: column; gap: 1px; }
+.style::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 70px; pointer-events: none;
+  background: linear-gradient(to bottom, rgba(0,0,0,0), var(--bg) 62%); }
+.style.sky::after { display: none; }
+.style .label { position: absolute; left: 14px; bottom: 12px; display: flex; flex-direction: column; gap: 1px; z-index: 1; }
 .style .label b { font-size: 18px; font-weight: 800; }
 .style .label em { font-style: normal; font-size: 12px; font-weight: 700; color: var(--soft); }
 .style.sky .label b, .style.sky .label em { color: #FFFFFF; text-shadow: 0 1px 8px rgba(0, 0, 0, 0.55); }
@@ -486,14 +497,7 @@ body[data-look="day"] .startbar { background: linear-gradient(to top, var(--bg) 
 body[data-look="bold"] .ghost { box-shadow: inset 0 0 0 2px #FFFFFF; }
 .btnrow { display: flex; gap: 8px; width: 100%; }
 .linkbtn { min-height: 44px; padding: 0 16px; border: 0; background: transparent; color: var(--soft); font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
-details.more { border-radius: 22px; background: var(--chip); padding: 0 16px; }
-details.more > summary { list-style: none; cursor: pointer; min-height: 56px; display: flex; align-items: center; justify-content: space-between; font-size: 17px; font-weight: 800; }
-details.more > summary::-webkit-details-marker { display: none; }
-details.more > summary svg { transition: transform 0.25s ease; color: var(--soft); }
-details.more[open] > summary svg { transform: rotate(180deg); }
-details.more[open] { padding-bottom: 18px; }
-body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
-.doneemo { font-size: 88px; line-height: 1.05; }
+body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
 .sheet {
   width: 100%;
   max-width: 520px;
@@ -576,9 +580,11 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   .seg button { min-height: 52px; padding: 0 18px; font-size: 17px; border-radius: 16px; }
   .styles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
   .style { height: 190px; border-radius: 28px; }
-  .style.wide { height: 220px; }
-  .style.wide.short { height: 190px; grid-column: span 2; }
+  .style.wide { height: 220px; grid-column: span 2; }
+  .style.wide.short { height: 220px; grid-column: span 1; }
+  .style.long { height: 220px; grid-column: 1 / -1; }
   .style .label { left: 18px; bottom: 16px; }
+  .style::after { height: 84px; }
   .style .label b { font-size: 22px; }
   .style .label em { font-size: 14px; }
   .profiles { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
@@ -612,6 +618,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   .startbar { right: auto; width: calc(max(40px, (100vw - 1180px) / 2 + 40px) + 420px); box-sizing: border-box; padding-left: max(40px, calc((100vw - 1180px) / 2 + 40px)); padding-right: 20px; justify-content: flex-start; background: none; }
   body[data-look] .startbar { background: none; }
   .start { max-width: 400px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35); }
+  .savebtn { min-height: 68px; }
 }
 </style>
 </head>
@@ -623,10 +630,16 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   <div class="setup-in">
     <div class="toprow">
       <div class="brand"><small>little easier</small><span>Timer</span></div>
+      <div class="topbtns">
       <a class="homelink" href="/" aria-label="All Little Easier apps">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="4" width="6" height="6" rx="1.5"></rect><rect x="14" y="4" width="6" height="6" rx="1.5"></rect><rect x="4" y="14" width="6" height="6" rx="1.5"></rect><rect x="14" y="14" width="6" height="6" rx="1.5"></rect></svg>
         <span>All apps</span>
       </a>
+      <button class="homelink" id="setBtn" type="button" aria-haspopup="dialog">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h10M18 7h2M4 17h2M10 17h10"></path><circle cx="16" cy="7" r="2.2"></circle><circle cx="8" cy="17" r="2.2"></circle></svg>
+        <span>Settings</span>
+      </button>
+      </div>
     </div>
 
     <div id="savedWrap" hidden>
@@ -660,20 +673,12 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       <button class="slot" id="slotNext" type="button"></button>
     </div>
     <p class="small">Shown while the timer runs, and big at the end, so everyone knows what comes next.</p>
-    <button class="ghost savebtn" id="saveBtn" type="button">⭐ Save as one of your timers</button>
+    <p class="small">Sounds, the end of the timer, counting up and more are in <button class="inlink" id="setLink" type="button">Settings</button>.</p>
 
-    <h2 class="sec">Make it feel right</h2>
-    <p class="small">Pick a quick setup. It's all remembered for next time.</p>
-    <div class="profiles" id="profiles"></div>
-    <details class="more" id="more">
-      <summary>More options <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></summary>
-      <div id="rows" class="row" style="gap: 18px"></div>
-    </details>
-
-    <p class="foot">No ads, no accounts, no WiFi needed. Everything you choose stays on this device.<br>Keep the screen open while the timer runs: phones don't let web apps make sounds when they're locked.</p>
+    <p class="foot">No ads, no accounts, no WiFi needed. Everything you choose stays on this device.<span class="webonly"><br>Keep the screen open while the timer runs: phones don't let web apps make sounds when they're locked.</span></p>
     </div>
   </div>
-  <div class="startbar"><button class="start" id="go" type="button">Start</button></div>
+  <div class="startbar"><button class="start" id="go" type="button">Start</button><button class="savebtn" id="saveBtn" type="button" aria-label="Save as one of your timers"><span aria-hidden="true">☆</span> Save</button></div>
 </main>
 
 <!-- ================= Running ================= -->
@@ -722,6 +727,17 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   </div>
 </div>
 
+<!-- Settings -->
+<div class="panel bottom" id="settings" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
+    <header><h2 id="setTitle">Settings</h2><button class="done-btn" id="setClose" type="button">Done</button></header>
+    <h3 class="sub">Make it feel right</h3>
+    <p class="small" style="margin-top:-8px">Pick a quick setup, or change anything below. It's all remembered for next time.</p>
+    <div class="profiles" id="profiles"></div>
+    <div id="rows" class="row" style="gap: 18px"></div>
+  </div>
+</div>
+
 <!-- Now / Next picker -->
 <div class="panel bottom" id="picker" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pickTitle">
@@ -747,7 +763,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   const DEF = {
     secs: 300, style: 'clock', now: null, next: null, saved: [],
     speak: 'off', kidBtns: 'show',
-    clockFill: 'solid', clockFace: 'numbers', celebrate: 'sparkles', bg: 'off', bgVol: 40,
+    clockFill: 'solid', clockFace: 'numbers', celebrate: 'sparkles', art: 'story', bg: 'off', bgVol: 40,
     end: 'chime', repeat: 'once', warn: 2, run: 'off', vol: 70, mute: false,
     numbers: 'words', look: 'day', colour: 'teal', motion: reduceMotion ? 'still' : 'gentle', dir: 'empty', lock: 'anyone',
   };
@@ -763,14 +779,14 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
 
   const STYLES = [
     { id: 'clock', name: 'Clock', hint: 'Like a classroom timer' },
+    { id: 'numbers', name: 'Numbers', hint: 'Big, clear digits' },
     { id: 'sand', name: 'Sand', hint: 'An hourglass' },
     { id: 'bubbles', name: 'Bubbles', hint: 'One pops at a time' },
-    { id: 'bath', name: 'Bath', hint: 'The bath slowly empties' },
-    { id: 'sunset', name: 'Sunset', hint: 'Day turns into night' },
+    { id: 'bath', name: 'Bath', hint: 'Slowly empties' },
+    { id: 'sunset', name: 'Sunset', hint: 'Day into night' },
     { id: 'rocket', name: 'Rocket', hint: 'Fly to the Moon' },
-    { id: 'dino', name: 'Dinosaur', hint: 'Stomp home to the nest' },
+    { id: 'dino', name: 'Dinosaur', hint: 'Stomp to the nest' },
     { id: 'train', name: 'Train', hint: 'Chug to the next stop' },
-    { id: 'numbers', name: 'Numbers', hint: 'Big, clear digits' },
   ];
   const PIC={"🛁": "<path d=\"M-15 0 H15 V5 Q15 12 7 12 H-7 Q-15 12 -15 5 Z\" fill=\"#8fc7ea\"/><path d=\"M-11 0 V-12 Q-11 -15 -8 -15 Q-5 -15 -5 -12\" fill=\"none\"/><circle cx=\"2\" cy=\"-5\" r=\"3.5\" fill=\"#fff\"/><circle cx=\"8\" cy=\"-8\" r=\"2.5\" fill=\"#fff\"/><circle cx=\"10\" cy=\"-3\" r=\"2\" fill=\"#fff\"/><path d=\"M-10 12 l-2 4 M10 12 l2 4\" fill=\"none\"/>", "🪥": "<g transform=\"rotate(-35)\"><rect x=\"-17\" y=\"-2.5\" width=\"26\" height=\"5\" rx=\"2.5\" fill=\"#8fd19a\"/><rect x=\"9\" y=\"-6\" width=\"9\" height=\"5\" rx=\"1.5\" fill=\"#fff\"/><path d=\"M10 -6 v-3 M13 -6 v-3 M16 -6 v-3\" fill=\"none\" stroke-width=\"1.6\"/></g><path d=\"M6 -14 q4 -2 6 1 q2 3 -2 4\" fill=\"#bfe2f3\"/>", "🛏️": "<path d=\"M-16 12 V-6 M16 12 V2\" fill=\"none\"/><rect x=\"-16\" y=\"2\" width=\"32\" height=\"7\" rx=\"2\" fill=\"#b7a8ee\"/><rect x=\"-14\" y=\"-5\" width=\"10\" height=\"7\" rx=\"3\" fill=\"#fff\"/><path d=\"M-4 2 Q2 -4 16 -2 V2 Z\" fill=\"#f7a9c0\"/>", "😴": "<path d=\"M2 -14 A13 13 0 1 0 14 4 A10 10 0 1 1 2 -14 Z\" fill=\"#f3dca0\"/><path d=\"M6 -16 h5 l-5 5 h5 M13 -10 h4 l-4 4 h4\" fill=\"none\" stroke-width=\"1.8\"/>", "👟": "<path d=\"M-17 4 V-6 Q-17 -9 -14 -9 H-8 L-4 -3 Q4 0 12 1 Q17 2 17 6 V9 H-17 Z\" fill=\"#e0607e\"/><path d=\"M-17 6 H17\" fill=\"none\"/><path d=\"M-9 -5 l3 2 M-6 -7 l3 2\" fill=\"none\" stroke-width=\"1.6\"/>", "🧥": "<path d=\"M-6 -14 L0 -9 L6 -14 L14 -10 L17 6 L11 7 L10 -2 L10 15 H-10 L-10 -2 L-11 7 L-17 6 L-14 -10 Z\" fill=\"#f2b64f\"/><path d=\"M0 -9 V15\" fill=\"none\"/><circle cx=\"-3\" cy=\"-2\" r=\"1.3\" fill=\"#2E3A3A\" stroke=\"none\"/><circle cx=\"-3\" cy=\"5\" r=\"1.3\" fill=\"#2E3A3A\" stroke=\"none\"/>", "🚗": "<path d=\"M-17 7 V0 Q-17 -3 -13 -3 L-9 -10 H7 L12 -3 Q17 -3 17 1 V7 Z\" fill=\"#e0607e\"/><path d=\"M-7 -8 H-1 V-3 H-11 Z M1 -8 H6 L9 -3 H1 Z\" fill=\"#cfe9f5\" stroke-width=\"1.6\"/><circle cx=\"-9\" cy=\"8\" r=\"4\" fill=\"#2E3A3A\"/><circle cx=\"9\" cy=\"8\" r=\"4\" fill=\"#2E3A3A\"/>", "🏫": "<path d=\"M-16 14 V-2 L0 -12 L16 -2 V14 Z\" fill=\"#f7a9c0\"/><rect x=\"-4\" y=\"4\" width=\"8\" height=\"10\" fill=\"#fffaf0\"/><circle cy=\"-3\" r=\"3.5\" fill=\"#fffaf0\"/><path d=\"M0 -12 V-18 L6 -16 L0 -14\" fill=\"#8fd19a\" stroke-width=\"1.6\"/><rect x=\"-12\" y=\"2\" width=\"5\" height=\"5\" fill=\"#cfe9f5\" stroke-width=\"1.6\"/><rect x=\"7\" y=\"2\" width=\"5\" height=\"5\" fill=\"#cfe9f5\" stroke-width=\"1.6\"/>", "🍽️": "<circle r=\"10\" fill=\"#fffaf0\"/><circle r=\"6\" fill=\"none\" stroke-width=\"1.6\"/><path d=\"M-16 -12 V12 M-18 -12 V-5 Q-16 -3 -14 -5 V-12\" fill=\"none\" stroke-width=\"1.8\"/><path d=\"M15 12 V-12 Q19 -6 15 0\" fill=\"none\" stroke-width=\"1.8\"/>", "🍎": "<path d=\"M0 -6 C-8 -12 -16 -4 -14 4 C-12 12 -6 15 0 13 C6 15 12 12 14 4 C16 -4 8 -12 0 -6 Z\" fill=\"#f08a7a\"/><path d=\"M0 -6 Q1 -12 4 -15\" fill=\"none\"/><path d=\"M3 -11 Q9 -15 12 -10 Q6 -7 3 -11 Z\" fill=\"#8fd19a\"/>", "🚽": "<rect x=\"-11\" y=\"-16\" width=\"10\" height=\"13\" rx=\"2\" fill=\"#fff\"/><path d=\"M-14 -3 H13 Q13 7 3 9 L5 15 H-7 L-5 9 Q-14 6 -14 -3 Z\" fill=\"#fff\"/><path d=\"M-10 -3 Q0 3 10 -3\" fill=\"none\" stroke-width=\"1.6\"/>", "🧹": "<path d=\"M10 -16 L-2 4\" fill=\"none\" stroke=\"#b07a4e\" stroke-width=\"3\"/><path d=\"M-4 1 L2 5 L-6 16 L-16 10 Z\" fill=\"#f3dca0\"/><path d=\"M-9 7 L-12 12 M-5 9 L-8 15\" fill=\"none\" stroke-width=\"1.5\"/>", "📺": "<rect x=\"-16\" y=\"-8\" width=\"32\" height=\"22\" rx=\"4\" fill=\"#b7a8ee\"/><rect x=\"-12\" y=\"-4\" width=\"20\" height=\"14\" rx=\"2\" fill=\"#cfe9f5\" stroke-width=\"1.6\"/><path d=\"M-6 -8 L-11 -16 M6 -8 L11 -16\" fill=\"none\"/><circle cx=\"12.5\" cy=\"0\" r=\"1.4\" fill=\"#2E3A3A\" stroke=\"none\"/><circle cx=\"12.5\" cy=\"5\" r=\"1.4\" fill=\"#2E3A3A\" stroke=\"none\"/>", "📱": "<rect x=\"-11\" y=\"-16\" width=\"22\" height=\"32\" rx=\"4\" fill=\"#86b7ea\"/><rect x=\"-8\" y=\"-12\" width=\"16\" height=\"22\" rx=\"1.5\" fill=\"#fffaf0\" stroke-width=\"1.6\"/><circle cy=\"13\" r=\"1.4\" fill=\"#2E3A3A\" stroke=\"none\"/>", "🎮": "<path d=\"M-10 -7 H10 Q17 -7 17 2 Q17 12 11 10 L6 5 H-6 L-11 10 Q-17 12 -17 2 Q-17 -7 -10 -7 Z\" fill=\"#8fc1b5\"/><path d=\"M-10 -1 V5 M-13 2 H-7\" fill=\"none\" stroke-width=\"2.2\"/><circle cx=\"8\" cy=\"0\" r=\"1.8\" fill=\"#e0607e\"/><circle cx=\"12\" cy=\"3\" r=\"1.8\" fill=\"#f6c94c\"/>", "🧸": "<circle cx=\"-9\" cy=\"-10\" r=\"5\" fill=\"#d9a26b\"/><circle cx=\"9\" cy=\"-10\" r=\"5\" fill=\"#d9a26b\"/><circle cy=\"0\" r=\"13\" fill=\"#d9a26b\"/><ellipse cy=\"5\" rx=\"6\" ry=\"4.5\" fill=\"#f3dca0\"/><circle cx=\"-5\" cy=\"-3\" r=\"1.6\" fill=\"#2E3A3A\" stroke=\"none\"/><circle cx=\"5\" cy=\"-3\" r=\"1.6\" fill=\"#2E3A3A\" stroke=\"none\"/><path d=\"M-2 3 Q0 5 2 3\" fill=\"#2E3A3A\"/>", "📖": "<path d=\"M0 -10 Q-8 -15 -17 -11 V12 Q-8 8 0 12 Z\" fill=\"#fffaf0\"/><path d=\"M0 -10 Q8 -15 17 -11 V12 Q8 8 0 12 Z\" fill=\"#fffaf0\"/><path d=\"M0 -10 V12\" fill=\"none\"/><path d=\"M-12 -5 Q-7 -7 -4 -5 M-12 0 Q-7 -2 -4 0 M4 -5 Q7 -7 12 -5 M4 0 Q7 -2 12 0\" fill=\"none\" stroke-width=\"1.4\"/>", "✏️": "<g transform=\"rotate(-40)\"><rect x=\"-14\" y=\"-4\" width=\"24\" height=\"8\" fill=\"#f6c94c\"/><rect x=\"-18\" y=\"-4\" width=\"4\" height=\"8\" rx=\"1.5\" fill=\"#f7a9c0\"/><path d=\"M10 -4 L17 0 L10 4 Z\" fill=\"#f3dca0\"/><path d=\"M15 -1 L17 0 L15 1\" fill=\"#2E3A3A\"/></g>", "🎨": "<path d=\"M0 -15 C12 -15 18 -6 15 2 C13 8 7 5 5 9 C3 14 -2 15 -6 13 C-14 10 -17 0 -13 -8 C-10 -13 -5 -15 0 -15 Z\" fill=\"#f3dca0\"/><circle cx=\"-7\" cy=\"-6\" r=\"2.6\" fill=\"#e0607e\"/><circle cx=\"1\" cy=\"-9\" r=\"2.6\" fill=\"#f6c94c\"/><circle cx=\"8\" cy=\"-5\" r=\"2.6\" fill=\"#86b7ea\"/><circle cx=\"-8\" cy=\"3\" r=\"2.6\" fill=\"#8fd19a\"/>", "🎵": "<path d=\"M-4 10 V-12 L12 -15 V6\" fill=\"none\" stroke-width=\"2.4\"/><ellipse cx=\"-8\" cy=\"10\" rx=\"5\" ry=\"4\" fill=\"#b7a8ee\"/><ellipse cx=\"8\" cy=\"7\" rx=\"5\" ry=\"4\" fill=\"#b7a8ee\"/>", "🌳": "<path d=\"M-2 16 V2 M2 16 V2\" fill=\"none\" stroke=\"#b07a4e\" stroke-width=\"3\"/><path d=\"M0 -16 C8 -16 12 -10 10 -5 C15 -3 15 6 8 6 C6 9 -6 9 -8 6 C-15 6 -15 -3 -10 -5 C-12 -10 -8 -16 0 -16 Z\" fill=\"#8fd19a\"/>", "🐶": "<path d=\"M-12 -12 Q-18 -6 -14 4 Q-11 -2 -9 -6 Z M12 -12 Q18 -6 14 4 Q11 -2 9 -6 Z\" fill=\"#b07a4e\"/><ellipse cy=\"1\" rx=\"11\" ry=\"12\" fill=\"#e8c9a0\"/><ellipse cy=\"7\" rx=\"6\" ry=\"4.5\" fill=\"#fffaf0\"/><ellipse cy=\"4\" rx=\"2.6\" ry=\"2\" fill=\"#2E3A3A\" stroke=\"none\"/><circle cx=\"-5\" cy=\"-3\" r=\"1.6\" fill=\"#2E3A3A\" stroke=\"none\"/><circle cx=\"5\" cy=\"-3\" r=\"1.6\" fill=\"#2E3A3A\" stroke=\"none\"/>", "🛒": "<path d=\"M-17 -12 H-12 L-8 6 H11 L15 -7 H-10\" fill=\"#fffaf0\"/><path d=\"M-9 -2 H13\" fill=\"none\" stroke-width=\"1.4\"/><circle cx=\"-6\" cy=\"12\" r=\"2.6\" fill=\"#2E3A3A\"/><circle cx=\"9\" cy=\"12\" r=\"2.6\" fill=\"#2E3A3A\"/>", "🏊": "<path d=\"M-17 4 q4 -4 8 0 t8 0 t8 0 t8 0 M-17 11 q4 -4 8 0 t8 0 t8 0 t8 0\" fill=\"none\" stroke=\"#4c86b9\" stroke-width=\"2.2\"/><circle cx=\"2\" cy=\"-8\" r=\"5\" fill=\"#f3d2b0\"/><path d=\"M-4 -9 H8\" fill=\"none\" stroke=\"#e0607e\" stroke-width=\"2.4\"/><path d=\"M-12 -2 Q-6 -10 2 -4\" fill=\"none\"/>", "⭐": "<path d=\"M0 -15 L4.5 -5 L15 -4.5 L7 2.5 L9.5 13 L0 7.5 L-9.5 13 L-7 2.5 L-15 -4.5 L-4.5 -5 Z\" fill=\"#f6c94c\"/>", "⏱️": "<circle cy=\"3\" r=\"12\" fill=\"#fffaf0\"/><path d=\"M-3 -12 H3 M0 -12 V-9 M10 -7 l3 -3\" fill=\"none\"/><path d=\"M0 3 V-4 M0 3 L5 6\" fill=\"none\" stroke=\"#e0607e\"/>", "🤫": "<path d=\"M-12 -5 H-6 L1 -11 V11 L-6 5 H-12 Z\" fill=\"#cfe9f5\"/><path d=\"M6 -6 L15 6 M15 -6 L6 6\" fill=\"none\" stroke=\"#e0607e\" stroke-width=\"2.2\"/>", "🔔": "<path d=\"M0 -14 C-8 -14 -10 -7 -10 0 C-10 6 -13 8 -14 10 H14 C13 8 10 6 10 0 C10 -7 8 -14 0 -14 Z\" fill=\"#f6c94c\"/><path d=\"M-4 12 Q0 17 4 12\" fill=\"none\"/>", "🌙": "<path d=\"M3 -15 A14 14 0 1 0 15 5 A11 11 0 1 1 3 -15 Z\" fill=\"#f3dca0\"/><circle cx=\"10\" cy=\"-10\" r=\"1.2\" fill=\"#2E3A3A\" stroke=\"none\"/>", "🎯": "<circle r=\"14\" fill=\"#f08a7a\"/><circle r=\"9.5\" fill=\"#fffaf0\"/><circle r=\"5\" fill=\"#f08a7a\"/><path d=\"M0 0 L12 -12 M9 -14 L12 -12 L14 -9\" fill=\"none\"/>"};
   function setPic(el,e){if(PIC[e]){el.innerHTML='<svg class="pic" viewBox="-20 -20 40 40" aria-hidden="true"><rect x="-19" y="-19" width="38" height="38" rx="12" fill="#FFF8EC"/><g filter="url(#tw-hand)" stroke="#2E3A3A" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">'+PIC[e]+'</g></svg>'}else el.textContent=e}
@@ -816,9 +832,8 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     { k: 'vol', t: 'Volume', range: true },
     { h: 'Seeing' },
     { k: 'numbers', t: 'Show time left', o: [['off', 'Hide it'], ['words', 'About 5 min'], ['exact', '4:59']] },
-    { k: 'look', t: 'Look', o: [['night', 'Night'], ['day', 'Day'], ['bold', 'Bold contrast']] },
-    { k: 'colour', t: 'Colour', swatch: true },
     { k: 'motion', t: 'Movement', o: [['gentle', 'Gentle'], ['still', 'Still']] },
+    { k: 'art', t: 'Picture style (test)', o: [['story', 'Storybook'], ['clean', 'Clean']], note: () => 'For trying out: Storybook draws the picture timers like cut paper. Clean is the old look.' },
     { k: 'dir', t: 'Count down or up', o: [['empty', 'Count down (empties)'], ['fill', 'Count up (fills)']], note: () => 'Counting up fills the timer instead of emptying it. It can feel less like time running out.' },
     { k: 'clockFill', t: 'Clock colours', o: [['solid', 'One colour'], ['rainbow', 'Rainbow']] },
     { k: 'clockFace', t: 'Clock face', o: [['numbers', 'Numbers'], ['pictures', 'Animal pictures']], note: () => 'These two are for the Clock timer.' },
@@ -1327,6 +1342,16 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const pts = bubbleLayout(n, b), fill = S.dir === 'fill';
     const e = (1 - f) * total, seg = total / n;
     const k = Math.min(n, Math.floor(e / seg + 1e-9)), q = k < n ? (e - k * seg) / seg : 1;
+    // storybook: each bubble sits on a pastel paper disc with a cut edge and a soft shadow
+    const story = isStory(), ed = Math.max(1.5, 2.6 * storyK);
+    const disc = story ? (x, y, r, al) => {
+      c.save(); c.globalAlpha = al;
+      c.shadowColor = TH.day ? 'rgba(70,52,30,0.26)' : 'rgba(0,0,0,0.5)'; c.shadowBlur = 7 * storyK; c.shadowOffsetY = 3 * storyK;
+      c.fillStyle = TH.day ? '#FFFDF7' : 'rgba(225,230,250,0.3)'; c.beginPath(); c.arc(x, y, r + ed, 0, TAU); c.fill();
+      c.shadowColor = 'rgba(0,0,0,0)';
+      c.fillStyle = rgba(TH.day ? mixRGB(TH.a, [255, 255, 255], 0.78) : mixRGB(TH.a, [15, 21, 40], 0.5)); c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+      c.restore();
+    } : () => {};
     for (let i = 0; i < n; i++) {
       const p = pts[i], rank = fill ? i : n - 1 - i;
       const x = p.x + (t ? Math.sin(t / 1700 + i * 1.3) * p.r * 0.06 : 0);
@@ -1338,15 +1363,18 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
           if (since >= 0 && since < 480) burst(c, x, y, p.r, since / 480);
         } else if (rank === k) {
           const quiver = q > 0.85 && t ? 0.02 * Math.sin(t / 40) : 0;
+          disc(x, y, p.r * (1 - 0.07 * q), 1 - 0.25 * q);
           bubble(c, x, y, p.r * (1 - 0.07 * q), 1 - 0.25 * q, t, p.s, 0.012 + 0.045 * q * q + quiver);
           littles(c, x, y, p.r, q, seg, t, false);
-        } else bubble(c, x, y, p.r, 1, t, p.s, 0.012);
+        } else { disc(x, y, p.r, 1); bubble(c, x, y, p.r, 1, t, p.s, 0.012); }
       } else {
         if (rank < k) {
           const g = since < 520 ? 1 - Math.pow(1 - since / 520, 3) * Math.cos((since / 520) * 6) * 0.35 : 1;
+          disc(x, y, p.r * clamp(g, 0.5, 1.1), 1);
           bubble(c, x, y, p.r * clamp(g, 0.5, 1.1), 1, t, p.s, 0.012);
         } else if (rank === k) {
           ghost(c, x, y, p.r);
+          disc(x, y, p.r * (0.15 + 0.55 * q), 0.55 + 0.4 * q);
           bubble(c, x, y, p.r * (0.15 + 0.55 * q), 0.55 + 0.4 * q, t, p.s, 0.03);
           littles(c, x, y, p.r, q, seg, t, true);
         } else ghost(c, x, y, p.r);
@@ -1364,23 +1392,28 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const bold = S.look === 'bold';
     const tubCol = bold ? '#FFFFFF' : TH.day ? '#FFFFFF' : '#E9EDF5';
     const tubShade = bold ? '#000000' : TH.day ? '#E7E3DA' : '#2A3352';
+    let tc = c; // the canvas tubPath draws on (a paper piece, in storybook)
     const tubPath = (ix0, ix1, iy0, iy1, r) => {
-      c.beginPath();
-      c.moveTo(ix0, iy0);
-      c.lineTo(ix0, iy1 - r);
-      c.quadraticCurveTo(ix0, iy1, ix0 + r, iy1);
-      c.lineTo(ix1 - r, iy1);
-      c.quadraticCurveTo(ix1, iy1, ix1, iy1 - r);
-      c.lineTo(ix1, iy0);
-      c.closePath();
+      tc.beginPath();
+      tc.moveTo(ix0, iy0);
+      tc.lineTo(ix0, iy1 - r);
+      tc.quadraticCurveTo(ix0, iy1, ix0 + r, iy1);
+      tc.lineTo(ix1 - r, iy1);
+      tc.quadraticCurveTo(ix1, iy1, ix1, iy1 - r);
+      tc.lineTo(ix1, iy0);
+      tc.closePath();
     };
+    const kb = 'ba' + Math.round(b.w) + 'x' + Math.round(b.h), still = 'b' + TH.acc + S.dir;
+    const ix0 = x0 + wall, ix1 = x1 - wall, iy0 = y0 + wall * 0.6, iy1 = y1 - wall;
+    const tapX = x1 - tw * 0.12, tapTop = y0 - th * 0.42;
+    pc(c, kb + 's', x0 - tw * 0.02, tapTop - tw * 0.03, tw * 1.04, y1 + th * 0.16 - (tapTop - tw * 0.03), (pcx) => {
+    const c = pcx; tc = pcx;
     // claw feet
     c.fillStyle = TH.cap;
     [x0 + tw * 0.14, x1 - tw * 0.14].forEach((fx) => {
       c.beginPath(); c.ellipse(fx, y1 + th * 0.06, tw * 0.045, th * 0.09, 0, 0, TAU); c.fill();
     });
     // tap, behind the rim on the right
-    const tapX = x1 - tw * 0.12, tapTop = y0 - th * 0.42;
     c.strokeStyle = bold ? '#FFFFFF' : TH.day ? '#AEB4C0' : '#C9CFDC';
     c.lineWidth = Math.max(3, tw * 0.03); c.lineCap = 'round'; c.lineJoin = 'round';
     c.beginPath();
@@ -1393,9 +1426,10 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     tubPath(x0, x1, y0, y1, rad);
     c.fillStyle = tubCol; c.fill();
     if (bold) { c.lineWidth = 2; c.strokeStyle = '#FFFFFF'; c.stroke(); }
-    const ix0 = x0 + wall, ix1 = x1 - wall, iy0 = y0 + wall * 0.6, iy1 = y1 - wall;
     tubPath(ix0, ix1, iy0, iy1, rad * 0.8);
     c.fillStyle = tubShade; c.fill();
+    }, still);
+    tc = c;
     const lvl = iy1 - shown * (iy1 - iy0 - th * 0.08);
     const amp = t ? th * 0.012 : 0;
     const surf = (xx) => lvl + Math.sin((xx - ix0) / tw * TAU * 1.6 + t / 900) * amp;
@@ -1441,14 +1475,16 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       c.beginPath(); c.moveTo(sx, sy); c.lineTo(sx, surf(sx)); c.stroke();
     }
     // rim
-    rr(c, x0 - tw * 0.02, y0 - th * 0.06, tw * 1.04, th * 0.1, th * 0.05);
-    c.fillStyle = tubCol; c.fill();
-    if (bold) { c.lineWidth = 2; c.strokeStyle = '#FFFFFF'; c.stroke(); }
+    pc(c, kb + 'r', x0 - tw * 0.02, y0 - th * 0.06, tw * 1.04, th * 0.1, (c) => {
+      rr(c, x0 - tw * 0.02, y0 - th * 0.06, tw * 1.04, th * 0.1, th * 0.05);
+      c.fillStyle = tubCol; c.fill();
+      if (bold) { c.lineWidth = 2; c.strokeStyle = '#FFFFFF'; c.stroke(); }
+    }, still);
     // the duck rides the water down
     const dw = tw * 0.1;
     const dx = ix0 + (ix1 - ix0) * (0.55 + (t ? 0.18 * Math.sin(t / 5200) : 0));
     const dy = Math.min(iy1 - dw * 0.3, surf(dx)) - dw * 0.18 + (t ? Math.sin(t / 650) * dw * 0.04 : 0);
-    if (dy > y0 - dw * 0.2 || shown < 0.99) {
+    if (dy > y0 - dw * 0.2 || shown < 0.99) pc(c, kb + 'd', dx - dw, dy - dw, dw * 2, dw * 1.5, (c) => {
       c.save();
       c.translate(dx, dy);
       c.rotate(t ? Math.sin(t / 900) * 0.06 : 0);
@@ -1463,7 +1499,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       c.fillStyle = 'rgba(255,255,255,0.5)';
       c.beginPath(); c.ellipse(-dw * 0.15, -dw * 0.1, dw * 0.25, dw * 0.1, -0.2, 0, TAU); c.fill();
       c.restore();
-    }
+    }, t ? null : still + dx.toFixed(1) + dy.toFixed(1));
   }
 
   // Sunset: the whole sky moves from day to night. No numbers needed.
@@ -1508,39 +1544,51 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     c.fillStyle = sg; c.fillRect(x, y, w, h);
     c.fillStyle = rgba(sc); c.beginPath(); c.arc(sx, sy, sr, 0, TAU); c.fill();
     // clouds drift slowly across
+    const story = isStory(), kb = 'ss' + Math.round(w) + 'x' + Math.round(h), pq = Math.round(p * 150);
     for (let k = 0; k < 3; k++) {
       const span = w * 1.5, drift = t ? t * 0.004 * (1 + k * 0.35) * (w / 400) : 0;
       const cx = x - w * 0.25 + ((rnd(k + 20) * span + drift) % span);
       const cy = y + h * (0.13 + 0.13 * k), cs = w * (0.13 - k * 0.018);
       const col = p < 0.6 ? mixRGB([255, 255, 255], [255, 214, 196], p / 0.6) : mixRGB([255, 214, 196], [70, 70, 120], (p - 0.6) / 0.4);
-      c.fillStyle = rgba(col, 0.8 - p * 0.45);
-      c.beginPath();
-      c.ellipse(cx, cy, cs, cs * 0.34, 0, 0, TAU);
-      c.ellipse(cx - cs * 0.45, cy + cs * 0.06, cs * 0.5, cs * 0.28, 0, 0, TAU);
-      c.ellipse(cx + cs * 0.15, cy - cs * 0.18, cs * 0.45, cs * 0.34, 0, 0, TAU);
-      c.fill();
+      const al = 0.8 - p * 0.45;
+      c.save(); if (story) c.globalAlpha = Math.min(1, al + 0.15);
+      pc(c, kb + 'c' + k, cx - cs * 0.95, cy - cs * 0.52, cs * 1.95, cs * 0.92, (c) => {
+        c.fillStyle = rgba(col, story ? 1 : al);
+        c.beginPath();
+        c.ellipse(cx, cy, cs, cs * 0.34, 0, 0, TAU);
+        c.ellipse(cx - cs * 0.45, cy + cs * 0.06, cs * 0.5, cs * 0.28, 0, 0, TAU);
+        c.ellipse(cx + cs * 0.15, cy - cs * 0.18, cs * 0.45, cs * 0.34, 0, 0, TAU);
+        c.fill();
+      }, t ? null : 'c' + pq + cx.toFixed(1));
+      c.restore();
     }
     const hill = (base, a1, f1, a2, f2, ph) => (xx) => base + Math.sin((xx / w) * f1 + ph) * h * a1 + Math.sin((xx / w) * f2) * h * a2;
     const back = hill(hor - h * 0.05, 0.025, 5, 0.01, 11, 1.2);
     const front = hill(hor + h * 0.04, 0.03, 3.4, 0.008, 9, 0.4);
-    [[back, HILL_B], [front, HILL_F]].forEach(([fn, keys]) => {
-      c.beginPath(); c.moveTo(x, y + h);
-      for (let xx = 0; xx < w; xx += 6) c.lineTo(x + xx, fn(xx));
-      c.lineTo(x + w, fn(w));
-      c.lineTo(x + w, y + h); c.closePath();
-      c.fillStyle = rgba(keyed(keys, p, 1)); c.fill();
+    const ov = story ? 30 : 0; // storybook: the hills run off the edges, so only their tops show as cut paper
+    [[back, HILL_B], [front, HILL_F]].forEach(([fn, keys], i) => {
+      const top = hor - h * 0.1;
+      pc(c, kb + 'h' + i, x - ov, top, w + ov * 2, y + h + ov - top, (c) => {
+        c.beginPath(); c.moveTo(x - ov, y + h + ov); c.lineTo(x - ov, fn(-ov));
+        for (let xx = 0; xx < w + ov; xx += 6) c.lineTo(x + xx, fn(xx));
+        c.lineTo(x + w + ov, fn(w + ov));
+        c.lineTo(x + w + ov, y + h + ov); c.closePath();
+        c.fillStyle = rgba(keyed(keys, p, 1)); c.fill();
+      }, 'h' + pq);
     });
     // a little house whose window lights up as night falls
     const hx = w * (o.mini ? 0.8 : 0.27), hb = front(hx) + h * 0.012, hs = m * (o.mini ? 0.14 : 0.08);
     const hc = mixRGB(keyed(HILL_F, p, 1), [0, 0, 0], 0.3);
-    c.fillStyle = rgba(hc);
-    c.beginPath();
-    c.moveTo(x + hx - hs * 0.6, hb); c.lineTo(x + hx - hs * 0.6, hb - hs * 0.7);
-    c.lineTo(x + hx, hb - hs * 1.25); c.lineTo(x + hx + hs * 0.6, hb - hs * 0.7);
-    c.lineTo(x + hx + hs * 0.6, hb); c.closePath(); c.fill();
     const tx = x + hx + hs * 1.3;
-    c.fillRect(tx - hs * 0.06, hb - hs * 0.6, hs * 0.12, hs * 0.6);
-    c.beginPath(); c.arc(tx, hb - hs * 0.85, hs * 0.38, 0, TAU); c.fill();
+    pc(c, kb + 'k', x + hx - hs * 0.65, hb - hs * 1.3, hs * 2.4, hs * 1.32, (c) => {
+      c.fillStyle = rgba(hc);
+      c.beginPath();
+      c.moveTo(x + hx - hs * 0.6, hb); c.lineTo(x + hx - hs * 0.6, hb - hs * 0.7);
+      c.lineTo(x + hx, hb - hs * 1.25); c.lineTo(x + hx + hs * 0.6, hb - hs * 0.7);
+      c.lineTo(x + hx + hs * 0.6, hb); c.closePath(); c.fill();
+      c.fillRect(tx - hs * 0.06, hb - hs * 0.6, hs * 0.12, hs * 0.6);
+      c.beginPath(); c.arc(tx, hb - hs * 0.85, hs * 0.38, 0, TAU); c.fill();
+    }, 'k' + pq);
     const lit = clamp((p - 0.68) / 0.22, 0, 1);
     c.fillStyle = rgba(mixRGB(hc, [255, 214, 120], lit));
     c.save();
@@ -1726,6 +1774,24 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const ex = b.x + (mini ? b.w * 0.16 : b.w * 0.24), ey = b.y + b.h - E * (mini ? 1.0 : 1.15);
     const mx = b.x + b.w * (mini ? 0.66 : 0.7), my = b.y + M * (mini ? 1.9 : 2.4); /* mini: clear of the selected tick in the corner */
     stars(c, b, mini ? 18 : 46, t, 11);
+    const kb = 'rk' + Math.round(b.w) + 'x' + Math.round(b.h), still = 'r' + TH.acc;
+    { // a little ringed planet
+      const px = b.x + b.w * (mini ? 0.42 : 0.2), py = b.y + b.h * (mini ? 0.3 : 0.36), pr = u * (mini ? 0.06 : 0.05);
+      pc(c, kb + 'p', px - pr * 2, py - pr * 1.2, pr * 4, pr * 2.4, (c) => {
+      c.fillStyle = bold ? '#FFFFFF' : rgba(mixRGB(TH.a, [255, 214, 150], 0.55)); c.beginPath(); c.arc(px, py, pr, 0, TAU); c.fill();
+      c.strokeStyle = bold ? '#FFFFFF' : rgba(mixRGB(TH.a, [255, 255, 255], 0.5), 0.9); c.lineWidth = Math.max(1.5, pr * 0.22);
+      c.beginPath(); c.ellipse(px, py, pr * 1.75, pr * 0.5, -0.35, Math.PI * 0.95, Math.PI * 2.05); c.stroke();
+      }, still);
+    }
+    if (t && !mini) { // a shooting star every few seconds
+      const ph = (t % 7000) / 900;
+      if (ph < 1) {
+        const sx0 = b.x + b.w * 0.85, sy0 = b.y + b.h * 0.08, dx = -b.w * 0.45, dy = b.h * 0.12;
+        const hx = sx0 + dx * ph, hy = sy0 + dy * ph, g = c.createLinearGradient(hx, hy, hx - dx * 0.25, hy - dy * 0.25);
+        g.addColorStop(0, 'rgba(255,255,255,' + (0.9 * (1 - ph)).toFixed(2) + ')'); g.addColorStop(1, 'rgba(255,255,255,0)');
+        c.strokeStyle = g; c.lineWidth = 2; c.beginPath(); c.moveTo(hx, hy); c.lineTo(hx - dx * 0.25, hy - dy * 0.25); c.stroke();
+      }
+    }
     const path = cachedPath('rk' + [b.x, b.y, b.w, b.h].map(Math.round).join(','), () => {
       const s0 = [ex + E * 0.15, ey - E * 1.08], top = [mx, my - M - u * (mini ? 0.07 : 0.1)], land = [mx, my - M * 1.02];
       return samplePath([
@@ -1733,6 +1799,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
         { line: true, a: top, b: land }]);
     });
     // Earth
+    pc(c, kb + 'e', ex - E, ey - E, E * 2, E * 2, (c) => {
     c.save();
     c.fillStyle = bold ? '#1C6BFF' : '#5B9FD9'; c.beginPath(); c.arc(ex, ey, E, 0, TAU); c.fill();
     c.clip();
@@ -1742,10 +1809,21 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     c.fillStyle = 'rgba(255,255,255,0.18)'; c.beginPath(); c.arc(ex - E * 0.35, ey - E * 0.35, E * 0.7, 0, TAU); c.fill();
     c.restore();
     if (bold) { c.strokeStyle = '#FFFFFF'; c.lineWidth = 2; c.beginPath(); c.arc(ex, ey, E, 0, TAU); c.stroke(); }
-    // Moon
+    }, still);
+    // Moon (with the flag once the rocket has landed)
+    const landed = p >= 0.999, fph = u * (mini ? 0.1 : 0.08);
+    pc(c, kb + 'm', mx - M, my - M - fph * 1.1, M * 2 + fph, M * 2 + fph * 1.1, (c) => {
     c.fillStyle = bold ? '#FFFFFF' : TH.day ? '#D9DCE6' : '#E8EAF2'; c.beginPath(); c.arc(mx, my, M, 0, TAU); c.fill();
     c.fillStyle = bold ? '#BBBBBB' : TH.day ? '#BFC4D2' : '#C9CDDA';
     [[-0.35, 0.15, 0.22], [0.3, 0.35, 0.16], [0.15, -0.3, 0.12], [-0.1, 0.55, 0.1]].forEach((k) => { c.beginPath(); c.arc(mx + k[0] * M, my + k[1] * M, k[2] * M, 0, TAU); c.fill(); });
+    if (landed) { // a little flag in the chosen colour
+      const fx = mx + M * 0.55, fy = my - M * 0.84, ph = fph, wv = t ? Math.sin(t / 300) * ph * 0.06 : 0;
+      c.strokeStyle = bold ? '#FFFFFF' : TH.day ? '#8A8F9C' : '#C9CDDA'; c.lineWidth = Math.max(1.5, u * 0.006);
+      c.beginPath(); c.moveTo(fx, fy); c.lineTo(fx, fy - ph); c.stroke();
+      c.fillStyle = TH.acc; c.beginPath(); c.moveTo(fx, fy - ph); c.quadraticCurveTo(fx + ph * 0.35, fy - ph * 0.95 + wv, fx + ph * 0.62, fy - ph * 0.8 + wv);
+      c.lineTo(fx, fy - ph * 0.58); c.fill();
+    }
+    }, landed && t ? null : still + landed);
     // the way to go: bright dots ahead, faint behind
     const L = path.total, here = p * L, gap = Math.max(10, u * 0.045), dr = Math.max(1.6, u * 0.009);
     for (let sx = gap * 0.5; sx < L - M * 0.2; sx += gap) {
@@ -1758,8 +1836,8 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const travel = q.a + Math.PI / 2, settle = clamp((p - 0.86) / 0.1, 0, 1);
     let ang = travel; while (ang > Math.PI) ang -= TAU; while (ang < -Math.PI) ang += TAU;
     ang = ang * (1 - settle);
-    const landed = p >= 0.999;
     const bob = t && !landed ? Math.sin(t / 420) * R * 0.05 : 0;
+    pc(c, kb + 'r', q.x - R * 2.8, q.y + bob - R * 2.8, R * 5.6, R * 5.6, (c) => {
     c.save(); c.translate(q.x, q.y + bob); c.rotate(ang);
     if (o.running && !landed) {
       const fl = R * (settle > 0.5 ? 0.5 : 1) * (t ? 0.85 + 0.25 * Math.sin(t / 60) : 1);
@@ -1780,14 +1858,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     c.fillStyle = '#9FD3F2'; c.beginPath(); c.arc(0, -R * 0.15, R * 0.17, 0, TAU); c.fill();
     c.fillStyle = 'rgba(255,255,255,0.7)'; c.beginPath(); c.arc(-R * 0.05, -R * 0.2, R * 0.06, 0, TAU); c.fill();
     c.restore();
-    // landed: a little flag in the chosen colour
-    if (landed) {
-      const fx = mx + M * 0.55, fy = my - M * 0.84, ph = u * (mini ? 0.1 : 0.08), wv = t ? Math.sin(t / 300) * ph * 0.06 : 0;
-      c.strokeStyle = bold ? '#FFFFFF' : TH.day ? '#8A8F9C' : '#C9CDDA'; c.lineWidth = Math.max(1.5, u * 0.006);
-      c.beginPath(); c.moveTo(fx, fy); c.lineTo(fx, fy - ph); c.stroke();
-      c.fillStyle = TH.acc; c.beginPath(); c.moveTo(fx, fy - ph); c.quadraticCurveTo(fx + ph * 0.35, fy - ph * 0.95 + wv, fx + ph * 0.62, fy - ph * 0.8 + wv);
-      c.lineTo(fx, fy - ph * 0.58); c.fill();
-    }
+    }, t ? null : still + q.x.toFixed(1) + q.y.toFixed(1) + ang.toFixed(3) + o.running);
   }
 
   // Train: chugs along a winding track to the next stop, where the Next picture waits. Track left = time left.
@@ -1809,16 +1880,23 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const L = path.total;
     // a little scenery: hills and trees between the rails
     const grass = bold ? '#0E3B1E' : TH.day ? '#CFE3C0' : '#23413A', tree = bold ? '#2CD66B' : TH.day ? '#86B98A' : '#3F7A63';
-    c.fillStyle = grass;
-    c.beginPath(); c.moveTo(b.x, b.y + b.h); c.lineTo(b.x, b.y + b.h * (rows === 3 ? 0.86 : 0.78));
-    c.quadraticCurveTo(b.x + b.w * 0.3, b.y + b.h * (rows === 3 ? 0.82 : 0.7), b.x + b.w * 0.6, b.y + b.h * (rows === 3 ? 0.87 : 0.8));
-    c.quadraticCurveTo(b.x + b.w * 0.85, b.y + b.h * (rows === 3 ? 0.9 : 0.84), b.x + b.w, b.y + b.h * (rows === 3 ? 0.85 : 0.76)); c.lineTo(b.x + b.w, b.y + b.h); c.fill();
+    const story = isStory(), kb = 'tr' + rows + Math.round(b.w) + 'x' + Math.round(b.h), still = 't' + TH.acc;
+    const gx0 = story && !mini ? -30 : b.x, gx1 = story && !mini ? c.canvas.width / (c.getTransform().a || 1) + 30 : b.x + b.w, gTop = b.y + b.h * (rows === 3 ? 0.8 : 0.68);
+    pc(c, kb + 'g', gx0, gTop, gx1 - gx0, b.y + b.h - gTop, (c) => {
+      c.fillStyle = grass;
+      c.beginPath(); c.moveTo(gx0, b.y + b.h); c.lineTo(gx0, b.y + b.h * (rows === 3 ? 0.86 : 0.78));
+      c.quadraticCurveTo(b.x + b.w * 0.3, b.y + b.h * (rows === 3 ? 0.82 : 0.7), b.x + b.w * 0.6, b.y + b.h * (rows === 3 ? 0.87 : 0.8));
+      c.quadraticCurveTo(b.x + b.w * 0.85, b.y + b.h * (rows === 3 ? 0.9 : 0.84), gx1, b.y + b.h * (rows === 3 ? 0.85 : 0.76)); c.lineTo(gx1, b.y + b.h); c.fill();
+    }, still);
     const nT = rows === 3 ? 7 : 4;
     for (let i = 0; i < nT; i++) {
-      const tx = b.x + b.w * (0.12 + 0.76 * rnd(i * 5 + 21)), row = rows === 3 ? i % 3 : 0;
+      const tx = b.x + b.w * (rows === 3 ? 0.24 + 0.5 * rnd(i * 5 + 21) : 0.12 + 0.76 * rnd(i * 5 + 21)), row = rows === 3 ? i % 3 : 0; /* clear of the bends */
       const ty = rows === 3 ? b.y + b.h * [0.37, 0.63, 0.9][row] : b.y + b.h * 0.42, tr = u * (rows === 3 ? 0.06 : 0.09) * (0.8 + 0.4 * rnd(i * 5 + 22));
-      c.fillStyle = bold ? '#FFFFFF' : TH.day ? '#A88B66' : '#6B5A48'; c.fillRect(tx - tr * 0.12, ty - tr * 0.2, tr * 0.24, tr * 0.9);
-      c.fillStyle = tree; c.beginPath(); c.arc(tx, ty - tr * 0.55, tr, 0, TAU); c.fill();
+      pc(c, kb + 't' + i, tx - tr, ty - tr * 1.6, tr * 2, tr * 2.4, (c) => {
+        c.fillStyle = bold ? '#FFFFFF' : TH.day ? '#A88B66' : '#6B5A48'; c.fillRect(tx - tr * 0.12, ty - tr * 0.2, tr * 0.24, tr * 0.9);
+        c.fillStyle = tree; c.beginPath(); c.arc(tx, ty - tr * 0.55, tr, 0, TAU); c.fill();
+        if (story) { c.beginPath(); c.arc(tx - tr * 0.55, ty - tr * 0.2, tr * 0.55, 0, TAU); c.arc(tx + tr * 0.6, ty - tr * 0.3, tr * 0.5, 0, TAU); c.fill(); } // a fuller, rounder tree
+      }, still);
     }
     // track: sleepers then rails; the part already travelled fades back
     const tw = u * (rows === 3 ? 0.05 : 0.07), sl = Math.max(8, u * 0.045);
@@ -1840,7 +1918,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       seg(0, Math.max(0, head - trainLen), 0.25); seg(Math.max(0, head - trainLen), L, 0.9);
     });
     // stations: home at the start, the next stop at the end (with the Next picture on its sign)
-    const st = (q, flip, pic) => {
+    const st = (c, q, flip, pic) => {
       const sw = u * (rows === 3 ? 0.2 : 0.24), sh = sw * 0.7, sx = q.x - sw / 2 + (flip ? 0 : 0), sy = q.y - tw * 1.4 - sh;
       c.fillStyle = bold ? '#000000' : TH.day ? '#FFFFFF' : '#2A3352'; rr(c, sx, sy, sw, sh, sw * 0.08); c.fill();
       if (bold || TH.day) { c.strokeStyle = bold ? '#FFFFFF' : 'rgba(46,58,58,0.18)'; c.lineWidth = 1.5; c.stroke(); }
@@ -1849,18 +1927,21 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       if (pic) { c.font = Math.round(sh * 0.62) + 'px system-ui, "Apple Color Emoji"'; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(pic, sx + sw / 2, sy + sh * 0.55); }
     };
     const nextPic = S.next && typeof S.next.e === 'string' && S.next.e.length <= 8 ? S.next.e : '⭐';
-    const endQ = path.at(L), startQ = path.at(0);
-    st({ x: startQ.x + (rows === 3 ? 0 : 0), y: startQ.y }, false, '');
-    st({ x: endQ.x, y: endQ.y }, true, nextPic);
+    const endQ = path.at(L), sw0 = u * (rows === 3 ? 0.2 : 0.24);
+    pc(c, kb + 's', endQ.x - sw0 * 0.6, endQ.y - tw * 1.4 - sw0 * 1.05, sw0 * 1.2, sw0 * 1.1, (c) => st(c, { x: endQ.x, y: endQ.y }, true, nextPic), still + nextPic);
     // the train: engine in the chosen colour, two carriages behind
     const cars = [{ l: trainLen * 0.4, engine: true }, { l: trainLen * 0.27 }, { l: trainLen * 0.27 }];
     let back = head, ch = tw * 2.2;
     const arrived = p >= 0.999;
+    let bx0 = 1e9, by0 = 1e9, bx1 = -1e9, by1 = -1e9;
+    for (let k = 0; k <= 8; k++) { const q = path.at(head - trainLen * k / 8); bx0 = Math.min(bx0, q.x); bx1 = Math.max(bx1, q.x); by0 = Math.min(by0, q.y); by1 = Math.max(by1, q.y); }
+    pc(c, kb + 'x', bx0 - ch * 1.6, by0 - ch * 2.2, bx1 - bx0 + ch * 3.2, by1 - by0 + ch * 2.8, (c) => {
     cars.forEach((cr, i) => {
       const fq = path.at(back), bq = path.at(back - cr.l), bob = t && o.running && !arrived ? Math.sin(t / 140 + i) * ch * 0.03 : 0;
-      const ca = Math.atan2(fq.y - bq.y, fq.x - bq.x);
-      c.save(); c.translate((fq.x + bq.x) / 2, (fq.y + bq.y) / 2 + bob); c.rotate(ca);
-      if (Math.cos(ca) < -0.01) c.scale(1, -1); // heading left: keep the roof and chimney on top
+      // seen from the side: round a bend each carriage narrows, then widens facing the other way, like a real train turning
+      const ca = Math.atan2(fq.y - bq.y, fq.x - bq.x), cxv = Math.cos(ca), sg = cxv < 0 ? -1 : 1;
+      const turn = sg * Math.max(0.32, Math.abs(cxv)), tilt = clamp(Math.sin(ca) * sg * 0.35, -0.3, 0.3);
+      c.save(); c.translate((fq.x + bq.x) / 2, (fq.y + bq.y) / 2 + bob); c.rotate(tilt); c.scale(turn, 1);
       const hw = cr.l / 2 - trainLen * 0.02;
       // wheels
       c.fillStyle = bold ? '#FFFFFF' : '#3A3F4F';
@@ -1880,6 +1961,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       c.restore();
       back -= cr.l;
     });
+    }, t && o.running && !arrived ? null : still + head.toFixed(1));
     // puffs of steam while it moves
     if (o.running && !arrived && t) {
       const eq = path.at(head - cars[0].l * 0.3);
@@ -1889,6 +1971,19 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
         if (TH.day && !bold) c.fillStyle = 'rgba(150,160,175,' + (0.45 * (1 - ph)).toFixed(2) + ')';
         c.beginPath(); c.arc(eq.x - Math.sin(eq.a) * ch * 1.6 - Math.cos(eq.a) * ph * ch * 1.2, eq.y - ch * 1.6 - ph * ch * 1.8, pr, 0, TAU); c.fill();
       }
+    }
+    // the tunnel it comes out of (drawn last, so the train is hidden inside until it emerges)
+    {
+      const tq = path.at(trainLen * 0.45), hw2 = u * (rows === 3 ? 0.16 : 0.2), hh = hw2 * 0.95, base = tq.y + tw * 1.1;
+      pc(c, kb + 'u', tq.x - hw2 * 1.5, base - hh * 1.5, hw2 * 2.75, hh * 1.5, (c) => {
+      c.fillStyle = bold ? '#0E3B1E' : TH.day ? '#9CC48F' : '#2F5A4C';
+      c.beginPath(); c.moveTo(tq.x - hw2 * 1.5, base); c.quadraticCurveTo(tq.x - hw2 * 1.2, base - hh * 1.5, tq.x, base - hh * 1.35);
+      c.quadraticCurveTo(tq.x + hw2 * 1.2, base - hh * 1.4, tq.x + hw2 * 1.25, base); c.closePath(); c.fill();
+      c.fillStyle = bold ? '#FFFFFF' : TH.day ? '#B7AE9E' : '#5B6378'; // stone arch
+      c.beginPath(); c.moveTo(tq.x - hw2 * 0.62, base); c.lineTo(tq.x - hw2 * 0.62, base - hh * 0.62); c.arc(tq.x, base - hh * 0.62, hw2 * 0.62, Math.PI, 0); c.lineTo(tq.x + hw2 * 0.62, base); c.closePath(); c.fill();
+      c.fillStyle = '#1C1A24'; // the dark way in
+      c.beginPath(); c.moveTo(tq.x - hw2 * 0.46, base); c.lineTo(tq.x - hw2 * 0.46, base - hh * 0.6); c.arc(tq.x, base - hh * 0.6, hw2 * 0.46, Math.PI, 0); c.lineTo(tq.x + hw2 * 0.46, base); c.closePath(); c.fill();
+      }, still);
     }
   }
 
@@ -1936,18 +2031,47 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const L = path.total;
     // scenery: a far-off volcano, ground and ferns
     const far = bold ? '#3A3A3A' : TH.day ? '#E2D6C2' : '#2B3350';
-    c.fillStyle = far; c.beginPath();
+    const story = isStory(), kb = 'dn' + rows + Math.round(b.w) + 'x' + Math.round(b.h), still = 'd' + TH.acc;
     const vx = b.x + b.w * 0.78, vy = b.y + b.h * (rows === 3 ? 0.14 : 0.4), vw = u * (rows === 3 ? 0.32 : 0.4);
-    c.moveTo(vx - vw, vy + vw * 0.55); c.lineTo(vx - vw * 0.18, vy - vw * 0.25); c.lineTo(vx + vw * 0.18, vy - vw * 0.25); c.lineTo(vx + vw, vy + vw * 0.55); c.fill();
-    c.fillStyle = bold ? '#FF7A3D' : rgba(hexRGB('#F2A35E'), TH.day ? 0.6 : 0.75); c.beginPath(); c.ellipse(vx, vy - vw * 0.25, vw * 0.18, vw * 0.06, 0, 0, TAU); c.fill();
-    const ground = bold ? '#0E3B1E' : TH.day ? '#D9E6C4' : '#23413A';
-    c.fillStyle = ground; c.beginPath(); c.moveTo(b.x, b.y + b.h); c.lineTo(b.x, b.y + b.h * (rows === 3 ? 0.87 : 0.84));
-    c.quadraticCurveTo(b.x + b.w * 0.5, b.y + b.h * (rows === 3 ? 0.83 : 0.78), b.x + b.w, b.y + b.h * (rows === 3 ? 0.88 : 0.82)); c.lineTo(b.x + b.w, b.y + b.h); c.fill();
+    pc(c, kb + 'v', vx - vw, vy - vw * 0.35, vw * 2, vw * 0.9, (c) => {
+      c.fillStyle = far; c.beginPath();
+      if (story) { // a hand-cut cone: a little lumpy, with a soft lip
+        c.moveTo(vx - vw, vy + vw * 0.55); c.quadraticCurveTo(vx - vw * 0.55, vy + vw * 0.05, vx - vw * 0.2, vy - vw * 0.24);
+        c.quadraticCurveTo(vx - vw * 0.08, vy - vw * 0.3, vx, vy - vw * 0.22); c.quadraticCurveTo(vx + vw * 0.1, vy - vw * 0.3, vx + vw * 0.2, vy - vw * 0.24);
+        c.quadraticCurveTo(vx + vw * 0.5, vy + vw * 0.08, vx + vw, vy + vw * 0.55); c.closePath(); c.fill();
+        c.fillStyle = rgba(TH.day ? [255, 255, 255] : [0, 0, 0], 0.18); c.beginPath(); // shaded side
+        c.moveTo(vx + vw * 0.05, vy - vw * 0.24); c.quadraticCurveTo(vx + vw * 0.15, vy + vw * 0.2, vx + vw * 0.1, vy + vw * 0.55); c.lineTo(vx + vw, vy + vw * 0.55); c.quadraticCurveTo(vx + vw * 0.5, vy + vw * 0.08, vx + vw * 0.2, vy - vw * 0.24); c.closePath(); c.fill();
+      } else { c.moveTo(vx - vw, vy + vw * 0.55); c.lineTo(vx - vw * 0.18, vy - vw * 0.25); c.lineTo(vx + vw * 0.18, vy - vw * 0.25); c.lineTo(vx + vw, vy + vw * 0.55); c.fill(); }
+      c.fillStyle = bold ? '#FF7A3D' : rgba(hexRGB('#F2A35E'), TH.day ? 0.6 : 0.75); c.beginPath(); c.ellipse(vx, vy - vw * 0.25, vw * 0.18, vw * 0.06, 0, 0, TAU); c.fill();
+    }, still);
+    const ground = bold ? '#0E3B1E' : TH.day ? '#D9E6C4' : '#23413A', gTop = b.y + b.h * (rows === 3 ? 0.82 : 0.76);
+    // storybook: the ground runs off both sides of the screen, so only its top edge shows as cut paper
+    const gx0 = story && !mini ? -30 : b.x, gx1 = story && !mini ? c.canvas.width / (c.getTransform().a || 1) + 30 : b.x + b.w;
+    pc(c, kb + 'g', gx0, gTop, gx1 - gx0, b.y + b.h - gTop, (c) => {
+      c.fillStyle = ground; c.beginPath(); c.moveTo(gx0, b.y + b.h); c.lineTo(gx0, b.y + b.h * (rows === 3 ? 0.87 : 0.84));
+      if (story) { // a gently rolling edge, like torn paper
+        const y0 = b.y + b.h * (rows === 3 ? 0.87 : 0.84), y1 = b.y + b.h * (rows === 3 ? 0.88 : 0.82);
+        for (let i = 1; i <= 24; i++) { const k = i / 24; c.lineTo(gx0 + (gx1 - gx0) * k, y0 + (y1 - y0) * k - b.h * 0.035 * Math.sin(k * Math.PI) + u * 0.006 * Math.sin(k * 41) + u * 0.004 * Math.sin(k * 97)); }
+      } else c.quadraticCurveTo(b.x + b.w * 0.5, b.y + b.h * (rows === 3 ? 0.83 : 0.78), b.x + b.w, b.y + b.h * (rows === 3 ? 0.88 : 0.82));
+      c.lineTo(gx1, b.y + b.h); c.fill();
+      for (let i = 0; i < (rows === 3 ? 14 : 7); i++) { // pebbles and specks on the ground
+        const gx = b.x + b.w * rnd(i * 11 + 61), gy = b.y + b.h * ((rows === 3 ? 0.9 : 0.88) + 0.08 * rnd(i * 11 + 62)), gr = u * (0.008 + 0.014 * rnd(i * 11 + 63));
+        c.fillStyle = i % 3 ? (bold ? '#888888' : TH.day ? '#BBA98C' : '#5E6B66') : rgba(bold ? [255, 255, 255] : TH.day ? [150, 130, 100] : [120, 140, 130], 0.4);
+        c.beginPath(); c.ellipse(gx, gy, gr * 1.4, gr, 0, 0, TAU); c.fill();
+      }
+    }, still);
     const fern = bold ? '#2CD66B' : TH.day ? '#8DBF84' : '#3F7A63';
     for (let i = 0; i < (rows === 3 ? 6 : 3); i++) {
       const fx = b.x + b.w * (0.1 + 0.8 * rnd(i * 7 + 41)), fy = rows === 3 ? b.y + b.h * [0.39, 0.63, 0.9][i % 3] : b.y + b.h * 0.95, fs = u * (rows === 3 ? 0.07 : 0.09);
-      c.strokeStyle = fern; c.lineWidth = Math.max(1.5, fs * 0.12); c.lineCap = 'round';
-      for (let k = -2; k <= 2; k++) { c.beginPath(); c.moveTo(fx, fy); c.quadraticCurveTo(fx + k * fs * 0.25, fy - fs * 0.7, fx + k * fs * 0.55, fy - fs * (1 - Math.abs(k) * 0.15)); c.stroke(); }
+      pc(c, kb + 'f' + i, fx - fs * 0.75, fy - fs * 1.1, fs * 1.5, fs * 1.2, (c) => {
+        c.strokeStyle = fern; c.fillStyle = fern; c.lineWidth = Math.max(1.5, fs * 0.12); c.lineCap = 'round';
+        for (let k = -2; k <= 2; k++) {
+          const ex = fx + k * fs * 0.55, ey = fy - fs * (1 - Math.abs(k) * 0.15), mx2 = fx + k * fs * 0.25, my2 = fy - fs * 0.7;
+          if (story) { // leaf-shaped fronds instead of lines
+            c.beginPath(); c.moveTo(fx, fy); c.quadraticCurveTo(mx2 - fs * 0.13, my2, ex, ey); c.quadraticCurveTo(mx2 + fs * 0.13, my2 + fs * 0.08, fx, fy); c.fill();
+          } else { c.beginPath(); c.moveTo(fx, fy); c.quadraticCurveTo(mx2, my2, ex, ey); c.stroke(); }
+        }
+      }, still);
     }
     // footprints: three toes and a pad, left and right of the trail. Ahead = time left; behind = faint
     const D = u * (rows === 3 ? 0.17 : 0.22);
@@ -1967,11 +2091,12 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     // the nest at the end, with its egg (it hatches when the time is up)
     const end = path.at(L), nw = D * 1.25, ny = end.y;
     const done = p >= 0.999;
+    const eggX = end.x, eggY = ny - D * 0.32, er = D * 0.28;
+    pc(c, kb + 'n', end.x - nw * 0.7, eggY - er * 2.2, nw * 1.4, ny + nw * 0.3 - (eggY - er * 2.2), (c) => {
     c.fillStyle = bold ? '#FFFFFF' : TH.day ? '#C9A06A' : '#8C6A44';
     c.beginPath(); c.ellipse(end.x, ny - D * 0.05, nw * 0.62, nw * 0.24, 0, 0, TAU); c.fill();
     c.strokeStyle = bold ? '#000000' : TH.day ? '#A27B4C' : '#6B5034'; c.lineWidth = Math.max(1, D * 0.03);
     for (let k = 0; k < 5; k++) { c.beginPath(); c.ellipse(end.x, ny - D * 0.05, nw * (0.55 - k * 0.04), nw * 0.2, (k - 2) * 0.12, Math.PI * 0.05, Math.PI * 0.95); c.stroke(); }
-    const eggX = end.x, eggY = ny - D * 0.32, er = D * 0.28;
     if (!done) {
       // in the last tenth of the time the egg starts to rock: nearly hatching
       const wob = p > 0.9 && t ? Math.sin(t / 140) * 0.12 * Math.min(1, (p - 0.9) * 10) : 0;
@@ -1987,12 +2112,68 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       const peek = t ? Math.sin(t / 500) * er * 0.06 : 0;
       c.save(); c.translate(eggX, eggY - er * 0.25 + peek); dinoShape(c, er * 0.55, TH.acc, 0, false, true); c.restore();
     }
+    }, (p > 0.9 || done) && t ? null : still + (done ? 'h' : 'e'));
     // the dinosaur: walks the trail, faces the way it's going, stays upright on the bends
     const q = path.at(Math.min(here, stopAt)), ahead2 = path.at(Math.min(L, here + 4));
     const mirror = ahead2.x < q.x - 0.5;
     const walking = o.running && !done && t;
     const step = walking ? Math.sin(t / 160) : 0, bob = walking ? Math.abs(Math.sin(t / 160)) * D * 0.04 : 0;
-    c.save(); c.translate(q.x, q.y - bob + D * 0.12); dinoShape(c, D, TH.acc, step, mirror, false); c.restore();
+    const dy = q.y - bob + D * 0.12;
+    pc(c, kb + 'd', q.x - D * 1.45, dy - D * 1.3, D * 2.9, D * 1.42, (c) => { c.save(); c.translate(q.x, dy); dinoShape(c, D, TH.acc, step, mirror, false); c.restore(); }, walking ? null : still + q.x.toFixed(1) + dy.toFixed(1) + mirror);
+  }
+
+  // ---------- storybook: each object drawn as one cut-out paper piece ----------
+  // fn draws the object into its own layer; it gets paper grain, a cut edge round the whole silhouette
+  // and one soft shadow, so it sits on the page like a pop-up piece. keep = a signature for still
+  // objects (redrawn only when it changes); null = redraw every frame.
+  const pieces = new Map(); let storyK = 1;
+  function piece(c, key, x, y, w, h, fn, keep) {
+    const s = c.getTransform().a || 1, r = Math.max(1.5, 2.6 * storyK), blur = 7 * storyK, pad = r + blur * 1.6 + 2;
+    const X = x - pad, Y = y - pad, pw = Math.max(1, Math.ceil((w + pad * 2) * s)), ph = Math.max(1, Math.ceil((h + pad * 2) * s));
+    const sig = keep == null ? null : keep + '|' + [X, Y, pw, ph, TH.day, S.look].join(',');
+    let e = pieces.get(key);
+    if (!e) { if (pieces.size > 180) pieces.clear(); e = { a: document.createElement('canvas'), b: document.createElement('canvas'), o: document.createElement('canvas') }; pieces.set(key, e); }
+    if (sig == null || e.sig !== sig) {
+      [e.a, e.b, e.o].forEach((cv) => { if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; } else cv.getContext('2d').clearRect(0, 0, pw, ph); });
+      const ac = e.a.getContext('2d'); ac.save(); ac.setTransform(s, 0, 0, s, -X * s, -Y * s); fn(ac); ac.restore();
+      ac.save(); ac.globalCompositeOperation = 'source-atop'; ac.globalAlpha = TH.day ? 0.75 : 0.28; ac.fillStyle = grain(ac, 'paper'); ac.fillRect(0, 0, pw, ph); ac.restore();
+      const bc = e.b.getContext('2d'), R = r * s; // the cut edge: the silhouette, grown a little, in paper white
+      for (let i = 0; i < 12; i++) { const an = i / 12 * TAU; bc.drawImage(e.a, Math.cos(an) * R, Math.sin(an) * R); }
+      bc.globalCompositeOperation = 'source-in'; bc.fillStyle = TH.day ? '#FFFDF7' : 'rgba(225,230,250,0.28)'; bc.fillRect(0, 0, pw, ph); bc.globalCompositeOperation = 'source-over';
+      const oc = e.o.getContext('2d');
+      oc.save(); oc.shadowColor = TH.day ? 'rgba(70,52,30,0.28)' : 'rgba(0,0,0,0.5)'; oc.shadowBlur = blur * s; oc.shadowOffsetY = blur * 0.45 * s; oc.drawImage(e.b, 0, 0); oc.restore();
+      oc.drawImage(e.a, 0, 0); e.sig = sig;
+    }
+    c.drawImage(e.o, 0, 0, pw, ph, X, Y, pw / s, ph / s);
+  }
+  // draw straight onto the canvas unless the storybook style is on
+  function pc(c, key, x, y, w, h, fn, keep) {
+    if (isStory()) piece(c, key, x, y, w, h, fn, keep); else fn(c);
+  }
+
+  // ---------- drawing style: storybook (cut paper on a paper page) or clean ----------
+  const ARTY = { rocket: 1, dino: 1, train: 1, bath: 1, sunset: 1, bubbles: 1 };
+  const grainPat = {};
+  function grain(c, kind) {
+    if (grainPat[kind]) return grainPat[kind];
+    const g = document.createElement('canvas'); g.width = g.height = 128;
+    const gc = g.getContext('2d');
+    for (let i = 0; i < 700; i++) {
+      const dark = rnd(i * 3 + 5) > 0.5;
+      gc.fillStyle = dark ? 'rgba(70,55,35,0.12)' : 'rgba(255,255,255,0.22)';
+      gc.fillRect(rnd(i * 3) * 128, rnd(i * 3 + 1) * 128, 1 + rnd(i * 3 + 2) * 1.4, 1 + rnd(i * 3 + 4) * 1.2);
+    }
+    return (grainPat[kind] = c.createPattern(g, 'repeat'));
+  }
+  const isStory = () => S.art !== 'clean' && S.look !== 'bold';
+  // the page itself gets a paper grain (not the Sunset sky, which stays smooth), then the timer draws its pieces on it
+  function withArt(c, id, box, fn) {
+    storyK = clamp(Math.min(box.w, box.h) / 360, 0.6, 2);
+    if (isStory() && ARTY[id] && id !== 'sunset') {
+      c.save(); c.globalCompositeOperation = TH.day ? 'multiply' : 'soft-light'; c.globalAlpha = TH.day ? 0.6 : 0.45;
+      c.fillStyle = grain(c, 'paper'); c.fillRect(box.x, box.y, box.w, box.h); c.restore();
+    }
+    fn();
   }
 
   const DRAW = { clock: drawClock, sand: drawSand, bubbles: drawBubbles, bath: drawBath, sunset: drawSunset, numbers: drawNumbers, rocket: drawRocket, train: drawTrain, dino: drawDino };
@@ -2298,7 +2479,7 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const st = $('styles');
     STYLES.forEach((s) => {
       const bt = document.createElement('button');
-      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : '') + (s.id === 'clock' || s.id === 'train' ? ' wide' : '') + (s.id === 'numbers' ? ' wide short' : ''); bt.dataset.v = s.id;
+      bt.type = 'button'; bt.className = 'style' + (s.id === 'sunset' ? ' sky' : '') + (s.id === 'clock' ? ' wide' : '') + (s.id === 'train' ? ' long' : '') + (s.id === 'numbers' ? ' wide short' : ''); bt.dataset.v = s.id;
       bt.setAttribute('aria-label', s.name + '. ' + s.hint + '.');
       const cnv = document.createElement('canvas'); cnv.setAttribute('aria-hidden', 'true');
       const lab = document.createElement('div'); lab.className = 'label';
@@ -2399,8 +2580,8 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     renderSaved();
     document.querySelectorAll('#styles .style').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.v === S.style)));
     const bub = STYLES.find((s) => s.id === 'bubbles'), m = S.secs / 60;
-    const bubHint = Number.isInteger(m) && m >= 2 && m <= 12 ? 'One pops each minute' : 'One pops at a time';
-    const bathHint = S.dir === 'fill' ? 'The bath slowly fills' : 'The bath slowly empties';
+    const bubHint = Number.isInteger(m) && m >= 2 && m <= 12 ? 'One a minute' : 'One at a time';
+    const bathHint = S.dir === 'fill' ? 'Slowly fills' : 'Slowly empties';
     document.querySelectorAll('#styles .style').forEach((b) => {
       const em = b.querySelector('em');
       if (b.dataset.v === 'bubbles') em.textContent = bubHint;
@@ -2532,10 +2713,21 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     S.saved = [item].concat((S.saved || []).filter((x) => JSON.stringify(x) !== key)).slice(0, 8);
     save(); renderSaved();
     const btn = $('saveBtn');
-    btn.textContent = '✓ Saved to your timers, at the top';
-    clearTimeout(btn._t); btn._t = setTimeout(() => { btn.textContent = '⭐ Save as one of your timers'; }, 2600);
+    btn.innerHTML = '<span aria-hidden="true">✓</span> Saved';
+    clearTimeout(btn._t); btn._t = setTimeout(() => { btn.innerHTML = '<span aria-hidden="true">☆</span> Save'; }, 2200);
+    const sw = $('savedWrap'); if (sw && sw.getBoundingClientRect().bottom < 0) sw.scrollIntoView({ behavior: 'smooth', block: 'start' });
     buzz(10);
   });
+
+  // settings sheet
+  const setPanel = $('settings');
+  function openSettings() { setPanel.hidden = false; setPanel.querySelector('.sheet').scrollTop = 0; }
+  function closeSettings() { setPanel.hidden = true; renderSetup(); }
+  $('setBtn').addEventListener('click', openSettings);
+  $('setLink').addEventListener('click', openSettings);
+  $('setClose').addEventListener('click', closeSettings);
+  setPanel.addEventListener('click', (e) => { if (e.target === setPanel) closeSettings(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !setPanel.hidden) closeSettings(); });
 
   // now / next picker
   let pickFor = 'next';
@@ -2580,6 +2772,8 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     tiles.forEach((m) => {
       const r = m.cv.getBoundingClientRect();
       m.w = r.width; m.h = r.height;
+      const lab = m.cv.parentElement.querySelector('.label');
+      m.lh = lab ? lab.getBoundingClientRect().height + 22 : 60;
       m.cv.width = Math.round(r.width * DPR); m.cv.height = Math.round(r.height * DPR);
     });
     sizeDial();
@@ -2595,16 +2789,16 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
       if (m.id === 'numbers') {
         const tot = S.secs * 1000, left = tot - (t % tot);
         drawBg(c, m.w, m.h);
-        drawNumbers(c, { x: 10, y: 18, w: m.w - 20, h: m.h - 72 }, left / tot, tm, { mini: true, running: true, left });
+        drawNumbers(c, { x: 10, y: 18, w: m.w - 20, h: m.h - (m.lh || 60) - 12 }, left / tot, tm, { mini: true, running: true, left });
         return;
       }
       const cyc = m.id === 'sunset' ? 12000 : 9000, ph = (t % cyc) / cyc;
       const f = ph < 0.85 ? 1 - ph / 0.85 : 0;
       const o = { mini: true, running: f > 0 && f < 1, total: cyc * 0.85 };
-      if (m.id === 'sunset') { drawSunset(c, { x: 0, y: 0, w: m.w, h: m.h }, f, tm, o); return; }
-      if (m.id === 'clock') { drawBg(c, m.w, m.h); drawClock(c, { x: m.w - (m.h - 16) - 14, y: 8, w: m.h - 16, h: m.h - 16 }, f, tm, o); return; }
+      if (m.id === 'sunset') { withArt(c, 'sunset', { x: 0, y: 0, w: m.w, h: m.h }, () => drawSunset(c, { x: 0, y: 0, w: m.w, h: m.h }, f, tm, o)); return; }
+      if (m.id === 'clock') { const cs = Math.min(m.h - 26, m.w * 0.5); drawBg(c, m.w, m.h); drawClock(c, { x: m.w - cs - 14, y: 8, w: cs, h: cs }, f, tm, o); return; }
       drawBg(c, m.w, m.h);
-      DRAW[m.id](c, { x: 10, y: 10, w: m.w - 20, h: m.h - 60 }, f, tm, o);
+      withArt(c, m.id, { x: 0, y: 0, w: m.w, h: m.h }, () => DRAW[m.id](c, { x: 10, y: 10, w: m.w - 20, h: m.h - (m.lh || 60) }, f, tm, o));
     });
   }
   function drawRun(t) {
@@ -2616,8 +2810,8 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
     const c = cx2;
     c.setTransform(DPR, 0, 0, DPR, 0, 0);
     const o = { running: T.pausedLeft == null && !T.done, total: T.total, left: l };
-    if (S.style === 'sunset') drawSunset(c, { x: 0, y: 0, w: W, h: H }, f, tm, o);
-    else { drawBg(c, W, H); DRAW[S.style](c, BOX, f, tm, o); }
+    if (S.style === 'sunset') withArt(c, 'sunset', { x: 0, y: 0, w: W, h: H }, () => drawSunset(c, { x: 0, y: 0, w: W, h: H }, f, tm, o));
+    else { drawBg(c, W, H); withArt(c, S.style, { x: 0, y: 0, w: W, h: H }, () => DRAW[S.style](c, BOX, f, tm, o)); }
     if (T.done && T.doneAt && S.celebrate === 'sparkles') drawCelebrate(c, t - T.doneAt);
     renderLeft(false);
   }
@@ -2632,7 +2826,15 @@ body[data-look="bold"] details.more { box-shadow: inset 0 0 0 2px #FFFFFF; }
   theme();
   buildSetup();
   renderSetup();
-  window.addEventListener('resize', resize);
+  // iPads report a rotation before the page has finished laying out, so measure again once it settles,
+  // and whenever the tiles or the dial actually change size
+  let rzT = 0;
+  window.addEventListener('resize', () => { resize(); clearTimeout(rzT); rzT = setTimeout(resize, 400); });
+  if (window.ResizeObserver) {
+    let rzF = 0;
+    const ro = new ResizeObserver(() => { cancelAnimationFrame(rzF); rzF = requestAnimationFrame(resize); });
+    ro.observe($('styles')); ro.observe(dialCv); ro.observe(document.documentElement);
+  }
   // pick up a timer that was running when the app was closed
   try {
     const r = JSON.parse(localStorage.getItem('timer-run') || 'null');
