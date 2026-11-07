@@ -821,7 +821,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     { id: 'quiet', e: '🤫', t: 'Quiet ears', d: 'No sounds at all. A soft glow at the end.', set: { end: 'light', run: 'off', repeat: 'once', speak: 'off', bg: 'off' } },
     { id: 'clear', e: '🔔', t: 'Clear signal', d: 'A heads-up, then bells until someone taps.', set: { end: 'bells', repeat: 'until', warn: 2, numbers: 'exact' } },
     { id: 'calm', e: '🌙', t: 'No pressure', d: 'No numbers. It fills up instead of running out.', set: { numbers: 'off', dir: 'fill', warn: 0, end: 'chime', repeat: 'once' } },
-    { id: 'focus', e: '🎯', t: 'Low distraction', d: 'Nothing moves or ticks. Just the time.', set: { motion: 'still', run: 'off', numbers: 'words', celebrate: 'off', kidBtns: 'hide' } },
+    { id: 'focus', e: '🎯', t: 'Low distraction', d: 'Nothing moves or ticks. Simple pictures.', set: { motion: 'still', run: 'off', numbers: 'words', celebrate: 'off', kidBtns: 'hide', art: 'clean' } },
   ];
   const ROWS = [
     { h: 'Sounds' },
@@ -838,7 +838,7 @@ body[data-look="bold"] .doneemo { font-size: 88px; line-height: 1.05; }
     { h: 'Seeing' },
     { k: 'numbers', t: 'Show time left', o: [['off', 'Hide it'], ['words', 'About 5 min'], ['exact', '4:59']] },
     { k: 'motion', t: 'Movement', o: [['gentle', 'Gentle'], ['still', 'Still']] },
-    { k: 'art', t: 'Picture style (test)', o: [['story', 'Storybook'], ['clean', 'Clean']], note: () => 'For trying out: Storybook draws the picture timers like cut paper. Clean is the old look.' },
+    { k: 'art', t: 'Picture style', o: [['story', 'Storybook'], ['clean', 'Simple']], note: () => S.art === 'clean' ? 'Flat, simple shapes with less detail.' : 'The picture timers look like cut paper, like a storybook.' },
     { k: 'dir', t: 'Count down or up', o: [['empty', 'Count down (empties)'], ['fill', 'Count up (fills)']], note: () => 'Counting up fills the timer instead of emptying it. It can feel less like time running out.' },
     { k: 'clockFill', t: 'Clock colours', o: [['solid', 'One colour'], ['rainbow', 'Rainbow']] },
     { k: 'clockFace', t: 'Clock face', o: [['numbers', 'Numbers'], ['pictures', 'Animal pictures']], note: () => 'These two are for the Clock timer.' },
